@@ -1,0 +1,133 @@
+﻿@using BookManagement.Constant;
+@using BookManagement.Models.Model;
+@using X.PagedList;
+@using X.PagedList.Mvc.Core;
+@using BookManagement.Models.Entity;
+@{
+    ViewData["Title"] = "Tìm kiếm";
+}
+
+@section css {
+    <!-- Libraries Stylesheet -->
+    <link href="~/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+}
+
+@section scripts {
+
+}
+
+<div class="container-fluid mb-5">
+    <div class="row px-xl-5">
+        <div class="col-lg-3 d-none d-lg-block">
+            <a class="btn shadow-none d-flex align-items-center justify-content-between bg-primary text-white w-100" data-toggle="collapse" href="#navbar-vertical" style="height: 50px; margin-top: -1px; padding: 0 30px;">
+                <h6 class="m-0">Danh mục sách</h6>
+                <i class="fa fa-angle-down text-dark"></i>
+            </a>
+            <nav class="collapse show navbar navbar-vertical navbar-light align-items-start p-0 border border-top-0 border-bottom-0" id="navbar-vertical">
+                <div class="navbar-nav w-100 overflow-auto" style="height: 410px">
+                    @{
+                        if (ViewBag.CategoryList != null && ViewBag.CategoryList.Count > 0)
+                        {
+                            foreach (var item in ViewBag.CategoryList)
+                            {
+                                <a href="/home/search?categoryId=@(item.Id)&keyword=@(ViewBag.Keyword)&sortType=@(ViewBag.SortType)" class="nav-item nav-link @(ViewBag.CategoryId == @item.Id ? "active" : "")">@item.CategoryName</a>
+                            }
+                        }
+                        else
+                        {
+                            <div class="h-100 w-100 d-flex align-items-center justify-content-center">
+                                <span>Không có danh mục</span>
+                            </div>
+                        }
+                    }
+                </div>
+            </nav>
+        </div>
+        <div class="col-lg-9 col-md-12">
+            <div class="row pb-3">
+                <div class="col-12 mb-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h4 class="font-weight-semi-bold">Tìm kiếm: @ViewBag.Keyword</h4>
+                        <div class="dropdown ml-4">
+                            <button class="btn border dropdown-toggle" type="button" id="triggerId" data-toggle="dropdown" aria-haspopup="true"
+                                    aria-expanded="false">
+                                Sắp xếp
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="triggerId">
+                                <a class="dropdown-item @(ViewBag.SortType == (int)Enumerations.SortType.New ? "active" : "")"
+                                   href="/home/search?categoryId=@(ViewBag.CategoryId)&keyword=@(ViewBag.Keyword)&sortType=@((int)Enumerations.SortType.New)">Mới nhất</a>
+                                <a class="dropdown-item @(ViewBag.SortType == (int)Enumerations.SortType.Sell ? "active" : "")"
+                                   href="/home/search?categoryId=@(ViewBag.CategoryId)&keyword=@(ViewBag.Keyword)&sortType=@((int)Enumerations.SortType.Sell)">Bán chạy</a>
+                                <a class="dropdown-item @(ViewBag.SortType == (int)Enumerations.SortType.Cheap ? "active" : "")"
+                                   href="/home/search?categoryId=@(ViewBag.CategoryId)&keyword=@(ViewBag.Keyword)&sortType=@((int)Enumerations.SortType.Cheap)">Giá thấp nhất</a>
+                                <a class="dropdown-item @(ViewBag.SortType == (int)Enumerations.SortType.Expensive ? "active" : "")"
+                                   href="/home/search?categoryId=@(ViewBag.CategoryId)&keyword=@(ViewBag.Keyword)&sortType=@((int)Enumerations.SortType.Expensive)">Giá cao nhất</a>
+                            </div>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(ViewBag.CategoryName))
+                    {
+                        <span class="label px-2 border rounded-sm bg-secondary">
+                            Danh mục: @ViewBag.CategoryName
+                            <a class="fa fa-times-circle ms-2" href="/home/search?keyword=@(ViewBag.Keyword)&sortType=@(ViewBag.SortType)"></a>
+                        </span>
+                    }
+                </div>
+
+                @{
+                    if (ViewBag.Paging.DataPaging != null && ViewBag.Paging.DataPaging.Count > 0)
+                    {
+                        @foreach (var book in ViewBag.Paging.DataPaging)
+                        {
+                            <div class="col-lg-4 col-md-6 col-sm-12 pb-1">
+                                <div class="card product-item border-0 mb-4">
+                                    <div class="card-header product-img position-relative overflow-hidden bg-transparent border p-0">
+                                        <img class="img-fluid w-100 h-100 object-fit-contain" src="/uploads/@book.BookImage" alt="Ảnh bìa sách">
+                                    </div>
+                                    <div class="card-body border-left border-right text-center p-0 pt-4 pb-3">
+                                        <h6 class="text-truncate px-2 mb-3" title="@book.BookName">@book.BookName</h6>
+                                        <div class="d-flex justify-content-center">
+                                            @if (book.PriceDiscount != null)
+                                            {
+                                                <h6>@(book.PriceDiscount.ToString("#,##0")) đ</h6>
+                                                <h6 class="text-muted ml-2"><del>@(string.Concat(((int)book.Price).ToString("#,##0"), " đ"))</del></h6>
+                                            }
+                                            else
+                                            {
+                                                <h6>@(book.Price.ToString("#,##0")) đ</h6>
+                                            }
+                                        </div>
+                                        <div class="sold-number pr-2">Đã bán @book.SoldQuantity</div>
+                                    </div>
+                                    <div class="card-footer d-flex justify-content-between bg-light border">
+                                        <a href="/home/detail?id=@book.Id" class="btn btn-sm text-dark p-0"><i class="fas fa-eye text-primary mr-1"></i>Xem</a>
+                                        <a href="/cart/addtocart?bookId=@book.Id" class="btn btn-sm text-dark p-0"><i class="fas fa-shopping-cart text-primary mr-1"></i>Thêm vào giỏ hàng</a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="ctn-empty-table w-100 my-5 text-center">
+                            <img src="~/img/empty_data_icon.png" class="w-px-100" />
+                            <div>Không có dữ liệu</div>
+                        </div>
+                    }
+                }
+
+                <div class="col-12 pb-1 d-flex justify-content-between">
+                    <h6 class="m-0">Tổng số: <strong>@ViewBag.Paging.TotalRecord</strong> bản ghi</h6>
+                    <nav aria-label="Page navigation">
+                        @Html.PagedListPager((IPagedList)ViewBag.Paging.DataPaging, page => Url.Action("search", "home", new { pageIndex = page, keyword = ViewBag.Keyword, categoryId = ViewBag.CategoryId, sortType = ViewBag.SortType }),  new PagedListRenderOptions {
+                        LiElementClasses = new string[] { "page-item" },
+                        PageClasses = new string[] { "page-link" },
+                        UlElementClasses = new string[] { "pagination justify-content-center mb-3" },
+                        MaximumPageNumbersToDisplay = 5,
+                        })
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,112 @@
+﻿@using BookManagement.Models.Model
+@model RegisterModel
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Đăng ký - Book Store</title>
+
+    <link href="~/img/logo-img.jpeg" rel="icon">
+    <!-- Custom fonts for this template-->
+    <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+          rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="~/css/sb-admin-2.css" rel="stylesheet">
+    <!-- Icons. Uncomment required icon fonts -->
+    <link rel="stylesheet" href="~/assets/vendor/fonts/boxicons.css" />
+</head>
+
+<body class="bg-gradient-primary">
+
+    <div class="container register-form">
+
+        <div class="card o-hidden border-0 shadow-lg my-5">
+            <div class="card-body p-0">
+                <!-- Nested Row within Card Body -->
+                <div class="row">
+                    <div class="col-lg-5 d-none d-lg-block bg-register-image"></div>
+                    <div class="col-lg-7">
+                        <div class="p-5">
+                            <div class="text-center">
+                                <h1 class="h4 text-gray-900 mb-4">Tạo tài khoản!</h1>
+                            </div>
+                            @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { @class = "user", role = "form" }))
+                            {
+                                <div class="form-group row">
+                                    <div class="col-sm-6 mb-3 mb-sm-0">
+                                        @Html.TextBoxFor(m => m.FirstName, new { @class = "form-control form-control-user", @required="required", @id="inp-first-name", @placeholder="Họ" })
+                                        @Html.ValidationMessageFor(m=>m.FirstName, "", new { @class = "text-danger" })
+                                    </div>
+                                    <div class="col-sm-6">
+                                        @Html.TextBoxFor(m => m.LastName, new { @class = "form-control form-control-user", @required="required", @id="inp-last-name", @placeholder="Tên" })
+                                        @Html.ValidationMessageFor(m=>m.LastName, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    @Html.TextBoxFor(m => m.UserName, new { @class = "form-control form-control-user", @required="required", @id="inp-user-name", @placeholder="Tên đăng nhập" })
+                                    @Html.ValidationMessageFor(m=>m.UserName, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group">
+                                    @Html.TextBoxFor(m => m.Email, new { @class = "form-control form-control-user", @required="required", @id="inp-email", @placeholder="Email", @type="email" })
+                                    @Html.ValidationMessageFor(m=>m.Email, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group form-password-toggle">
+                                    <div class="input-group input-group-merge">
+                                        @Html.PasswordFor(m => m.Password, new { @class = "form-control form-control-user", @id="inp-password", @required="required", @placeholder="Mật khẩu" })
+                                        <span class="btn-user input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
+                                    </div>
+                                    @Html.ValidationMessageFor(m=>m.Password, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="form-group form-password-toggle">
+                                    <div class="input-group input-group-merge">
+                                        @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control form-control-user", @id="inp-re-password", @required="required", @placeholder="Nhập lại mật khẩu" })
+                                        <span class="btn-user input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
+                                    </div>
+                                    @Html.ValidationMessageFor(m=>m.ConfirmPassword, "", new { @class = "text-danger" })
+                                </div>
+                                <button class="btn btn-primary btn-user btn-block" type="submit">
+                                    Đăng ký
+                                </button>
+                            }
+                            <hr>
+                            <div class="text-center">
+                                <a class="small" href="/account/login">Bạn đã có tài khoản? Đăng nhập!</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="~/vendor/jquery/jquery.min.js"></script>
+    <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="~/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="~/js/sb-admin-2.js"></script>
+
+    <!-- Contact Javascript File -->
+    <script src="~/mail/jqBootstrapValidation.min.js"></script>
+    <script src="~/mail/contact.js"></script>
+    <script src="~/js/main.js"></script>
+</body>
+
+</html>

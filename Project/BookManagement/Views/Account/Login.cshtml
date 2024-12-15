@@ -1,0 +1,137 @@
+﻿@using BookManagement.Constant;
+@using BookManagement.Models.Model
+@model UserModel
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Đăng nhập - Book Store</title>
+
+    <link href="~/img/logo-img.jpeg" rel="icon">
+    <!-- Custom fonts for this template-->
+    <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+          rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="~/css/sb-admin-2.css" rel="stylesheet">
+    <!-- Icons. Uncomment required icon fonts -->
+    <link rel="stylesheet" href="~/assets/vendor/fonts/boxicons.css" />
+    <link href="~/css/toast.css" rel="stylesheet" />
+</head>
+
+<body class="bg-gradient-primary">
+    <div class="container">
+        <!-- Outer Row -->
+        <div class="row justify-content-center">
+            <div class="col-xl-10 col-lg-12 col-md-9">
+                <div class="card o-hidden border-0 shadow-lg my-5">
+                    <div class="card-body p-0">
+                        <!-- Nested Row within Card Body -->
+                        <div class="row">
+                            <div class="col-lg-6 d-none d-lg-block bg-login-image"></div>
+                            <div class="col-lg-6">
+                                <div class="px-5 pb-5 pt-4">
+                                    <div class="mb-3 text-center">
+                                        <img class="logo-img" src="~/img/logo-img.jpeg" />
+                                    </div>
+                                    <div class="text-center">
+                                        <h1 class="h4 text-gray-900 mb-4">Chào mừng bạn!</h1>
+                                    </div>
+                                    @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, true, new { @class = "user", role = "form" }))
+                                    {
+                                        <div class="form-group">
+                                            @Html.TextBoxFor(m => m.UserName, new { @class = "form-control form-control-user", @required = "required", @placeholder = "Email hoặc Tên đăng nhập" })
+                                            @Html.ValidationMessageFor(m => m.UserName, "", new { @class = "text-danger" })
+
+                                        </div>
+                                        <div class="form-group form-password-toggle">
+                                            <div class="input-group input-group-merge">
+                                                @Html.PasswordFor(m => m.Password, new { @class = "form-control form-control-user", @required = "required", @placeholder = "Mật khẩu" })
+                                                <span class="btn-user input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
+                                            </div>
+                                            @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+                                        </div>
+                                   @*      <div class="form-group">
+                                            <div class="custom-control custom-checkbox small">
+                                                @Html.CheckBoxFor(m => m.RememberMe, new { @id = "rememberMe", @class = "custom-control-input" })
+                                                <label class="custom-control-label" for="customCheck">
+                                                    Remember
+                                                    Me
+                                                </label>
+                                            </div>
+                                        </div> *@
+                                        <button type="submit" class="btn btn-primary btn-user btn-block">
+                                            Đăng nhập
+                                        </button>
+                                        <hr>
+                                        <a href="/account/logingoogle" class="btn btn-google btn-user btn-block">
+                                            <i class="fab fa-google fa-fw"></i> Đăng nhập với Google
+                                        </a>
+                                    }
+                                    <hr>
+                                    <div class="text-center">
+                                        <a class="small" href="/account/forgotpassword">Quên mật khẩu?</a>
+                                    </div>
+                                    <div class="text-center">
+                                        <a class="small" href="/account/register">Bạn chưa có tài khoản? Đăng ký ngay!</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bs-toast toast toast-placement @(ViewBag.ToastType?.ToString() == Constants.Success ? "bg-success" : "bg-danger") top-0 end-0 mr-3 mt-3"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             data-delay="3000">
+            <div class="toast-header">
+                <i class="bx bx-bell mr-2"></i>
+                <div class="me-auto fw-semibold">@(ViewBag.ToastType?.ToString() == Constants.Success ? "Thành công" : "Thất bại")</div>
+            </div>
+            <div class="toast-body">
+                @ViewBag.ToastMessage
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="~/vendor/jquery/jquery.min.js"></script>
+    <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="~/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="~/js/sb-admin-2.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            // Kiểm tra nếu có toast message trong TempData
+            if ('@ViewBag.ToastType' && '@ViewBag.ToastType' != 'None') {
+                // Hiển thị toast message
+                $('.toast-placement').toast('show');
+            }
+        });
+    </script>
+    @{
+        ViewBag.ToastType = Constants.None;
+        ViewBag.ToastMessage = string.Empty;
+    }
+</body>
+</html>

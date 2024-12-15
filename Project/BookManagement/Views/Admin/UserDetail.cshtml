@@ -1,0 +1,151 @@
+﻿@using BookManagement.Constant;
+@using BookManagement.Models.Entity;
+@model User
+
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Menu = 6;
+}
+
+@section css {
+}
+@section scripts {
+}
+<div class="d-flex align-items-center">
+    <a href="/admin/usermanagement">
+        <i class="menu-icon tf-icons bx bx-arrow-back" style="font-size: 1.5em;"></i>
+    </a>
+
+    <h5 class="m-0">Tài khoản</h5>
+</div>
+
+<div class="card mt-3">
+    <div class="card-body">
+        @using (@Html.BeginForm("UserDetail", "Admin", FormMethod.Post))
+        {
+            @Html.HiddenFor(m => m.Id)
+            @Html.HiddenFor(m => m.Password)
+            <div class="row mb-3">
+                <label class="col-sm-2 col-form-label text-align-end">Tên đăng nhập</label>
+                <div class="col-sm-4">
+                    <div class="input-group input-group-merge">
+                        <span class="input-group-text">
+                            <i class="bx bx-user"></i>
+                        </span>
+                        @Html.TextBoxFor(m => m.UserName, new { @class = $"form-control {(Model.Id > 0 ? "disabled" : "")}", required = "required", placeholder = "Tên đăng nhập", maxlength = "255" })
+                    </div>
+                    @Html.ValidationMessageFor(m => m.UserName, "", new { @class = "text-danger" })
+                </div>
+                <label class="col-sm-1 px-0 col-form-label text-align-end">Phân quyền</label>
+                <div class="col-sm-3">
+                    <div class="input-group input-group-merge">
+                        <span class="input-group-text">
+                            <i class="bx bx-user-check"></i>
+                        </span>
+                        @Html.DropDownList("RoleType", (IEnumerable<SelectListItem>)ViewBag.RoleList, new { @class = "form-select" })
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label class="col-sm-2 col-form-label text-align-end">Họ</label>
+                <div class="col-sm-4">
+                    <div class="input-group input-group-merge">
+                        <span class="input-group-text">
+                            <i class="bx bx-user-pin"></i>
+                        </span>
+                        @Html.TextBoxFor(m => m.FirstName, new { @class = "form-control", required = "required", placeholder = "Họ", maxlength = "255" })
+                    </div>
+                    @Html.ValidationMessageFor(m => m.FirstName, "", new { @class = "text-danger" })
+                </div>
+                <label class="col-sm-1 col-form-label text-align-end">Tên</label>
+                <div class="col-sm-5">
+                    <div class="input-group input-group-merge">
+                        <span class="input-group-text">
+                            <i class="bx bx-user-pin"></i>
+                        </span>
+                        @Html.TextBoxFor(m => m.LastName, new { @class = "form-control", required = "required", placeholder = "Tên", maxlength = "255" })
+                    </div>
+                    @Html.ValidationMessageFor(m => m.LastName, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label class="col-sm-2 col-form-label text-align-end">Ngày sinh</label>
+                <div class="col-sm-4">
+                    <div class="input-group input-group-merge">
+                        <span class="input-group-text">
+                            <i class="bx bx-calendar"></i>
+                        </span>
+                        @Html.TextBoxFor(m => m.BirthDay, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                    </div>
+                </div>
+                <label class="col-sm-1 col-form-label text-align-end">Giới tính</label>
+                <div class="col-sm-3">
+                    <div class="input-group input-group-merge">
+                        <span class="input-group-text"><i class="bx bx-male"></i></span>
+                        @Html.DropDownList("Gender", (IEnumerable<SelectListItem>)ViewBag.GenderList, new { @class = "form-select" })
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label class="col-sm-2 col-form-label text-align-end">Số điện thoại</label>
+                <div class="col-sm-4">
+                    <div class="input-group input-group-merge">
+                        <span class="input-group-text">
+                            <i class="bx bx-phone"></i>
+                        </span>
+                        @Html.TextBoxFor(m => m.PhoneNumber, new { @class = "form-control phone-mask", placeholder = "Số điện thoại" })
+                    </div>
+                    @Html.ValidationMessageFor(m => m.PhoneNumber, "", new { @class = "text-danger" })
+                </div>
+                <label class="col-sm-1 col-form-label text-align-end">Email</label>
+                <div class="col-sm-5">
+                    <div class="input-group input-group-merge">
+                        <span class="input-group-text"><i class="bx bx-envelope"></i></span>
+                        @Html.TextBoxFor(m => m.Email, new { @class = "form-control", @required = "required", @placeholder = "Email", @type = "email" })
+                        <span id="basic-icon-default-email2" class="input-group-text">@("@example.com")</span>
+                    </div>
+                    @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label class="col-sm-2 col-form-label text-align-end">Địa chỉ</label>
+                <div class="col-sm-10">
+                    <div class="input-group input-group-merge">
+                        <span class="input-group-text">
+                            <i class="bx bx-map"></i>
+                        </span>
+                        @Html.TextBoxFor(m => m.Address, new { @class = "form-control", placeholder = "Địa chỉ", maxlength = "500" })
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label class="col-sm-2 form-label text-align-end">Thông tin khác</label>
+                <div class="col-sm-10">
+                    <div class="input-group input-group-merge">
+                        <span class="input-group-text">
+                            <i class="bx bx-comment"></i>
+                        </span>
+                        @Html.TextAreaFor(model => model.Infomation, new { rows = "3", @class = "form-control", placeholder = "Thông tin khác" })
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label class="col-sm-2 form-label text-align-end">Trạng thái tài khoản</label>
+                <div class="col-sm-10">
+                    <div class="form-check form-switch">
+                        @Html.CheckBoxFor(m => m.IsActive, new { @class = "form-check-input" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center justify-content-end">
+                <div class="d-flex">
+                    <button type="button" class="btn btn-outline-secondary mx-2" onclick="location.href='/admin/usermanagement';">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Lưu</button>
+                </div>
+            </div>
+            @Html.EditorFor(model => model.CreatedDate, new { @type = "date", @class = "d-none hide-cls" })
+        }
+    </div>
+</div>

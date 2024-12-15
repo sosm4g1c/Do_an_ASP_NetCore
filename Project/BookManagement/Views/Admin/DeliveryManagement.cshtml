@@ -1,0 +1,330 @@
+﻿@using BookManagement.Models.Model;
+@using X.PagedList;
+@using X.PagedList.Mvc.Core;
+@using BookManagement.Models.Entity;
+@model PagingModel<Delivery>
+
+@{
+    ViewData["Title"] = "Phương thức vận chuyển";
+    ViewData["HeaderTitle"] = "Phương thức vận chuyển";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Menu = 8;
+}
+
+@section css {
+}
+
+<div class="d-flex justify-content-end align-items-center pb-3">
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" onclick="addDelivery()"
+            data-bs-target="#deliveryModal" style="height: fit-content;">
+        Thêm mới
+    </button>
+</div>
+<div class="card">
+    <div class="table-responsive text-nowrap">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Mã</th>
+                    <th>Phương thức vận chuyển</th>
+                    <th>Phí vận chuyển</th>
+                    <th>Trạng thái</th>
+                    <th class="action">Hành động</th>
+                </tr>
+            </thead>
+            <tbody class="table-border-bottom-0">
+                @{
+                    if (Model.DataPaging != null && Model.DataPaging.Any())
+                    {
+                        @foreach (var item in Model.DataPaging)
+                        {
+                            <tr>
+                                <td><i class="fab fa-angular fa-lg text-danger me-3"></i> <strong>@item.DeliveryCode</strong></td>
+                                <td>@item.DeliveryName</td>
+                                <td>@(item.Cost.ToString("#,##0")) đ</td>
+                                <td><span class="badge @(item.IsActive ? "bg-label-success" : "bg-label-danger") me-1">@(item.IsActive ? "Đang hoạt động" : "Không hoạt động")</span></td>
+                                <td class="action">
+                                    <div class="d-flex h-100">
+                                        <a class="h-100 w-px-30" onclick="editDelivery(@item.Id)" title="Sửa"><i class="bx bx-edit-alt me-1"></i></a>
+                                        <a class="h-100 w-px-30" onclick="deleteDelivery(@item.Id)" title="Xóa"><i class="bx bx-trash me-1"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr class="empty-table">
+                            <td colspan="5">
+                                <div class="ctn-empty-table w-100 my-5 text-center">
+                                    <img src="~/img/empty_data_icon.png" class="w-px-100" />
+                                    <div>Không có dữ liệu</div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="d-flex justify-content-between align-items-center px-3 py-2 border-top">
+        <h6 class="m-0">Tổng số: <strong>@Model.TotalRecord</strong> bản ghi</h6>
+        <nav aria-label="Page navigation">
+            @Html.PagedListPager((IPagedList)Model.DataPaging, page => Url.Action("deliverymanagement", "admin", new { pageIndex = page }),  new PagedListRenderOptions {
+            LiElementClasses = new string[] { "page-item" },
+            PageClasses = new string[] { "page-link" },
+            UlElementClasses = new string[] { "pagination justify-content-center mb-1" },
+            MaximumPageNumbersToDisplay = 5,
+            })
+        </nav>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="deliveryModal" tabindex="-1" aria-hidden="true" data-bs-keyboard="false" data-bs-backdrop="static">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel1">Thêm phương thức vận chuyển</h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-2">
+                    <div class="col mb-3">
+                        <label field="deliveryCode" class="form-label">Mã</label>
+                        <input type="text" maxlength="6" required="required" id="deliveryCode" name="deliveryCode" class="form-control" placeholder="Nhập mã" />
+                        <span field="deliveryCode" class="text-danger field-validation-valid"></span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col mb-3">
+                        <label field="deliveryName" class="form-label">Tên phương thức vận chuyển</label>
+                        <input type="text" maxlength="500" required="required" id="deliveryName" name="deliveryName" class="form-control" placeholder="Nhập tên" />
+                        <span field="deliveryName" class="text-danger field-validation-valid"></span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col mb-0">
+                        <label field="cost" class="form-label">Phí vận chuyển</label>
+                        <div class="input-group">
+                            <input type="number" required="required" id="cost" name="cost" class="form-control" placeholder="Phí vận chuyển" value="0" />
+                            <span class="input-group-text">đ</span>
+                        </div>
+                        <span field="cost" class="text-danger field-validation-valid"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-between align-items-center">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="isActive" name="isActive" checked />
+                    <label class="form-check-label">Trạng thái</label>
+                </div>
+                <div class="d-flex">
+                    <button type="button" class="btn btn-outline-secondary mx-2" data-bs-dismiss="modal">
+                        Đóng
+                    </button>
+                    <button id="btnSave" class="btn btn-primary">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        let entity = {}, editMode = "Add";
+
+        function addDelivery() {
+            editMode = "Add";
+            clearValueInput();
+            $('.modal [name="deliveryCode"]').prop('disabled', false);
+        }
+
+        function editDelivery(id) {
+            editMode = "Edit";
+            clearValueInput();
+
+            // Disable mã delivery
+            $('.modal [name="deliveryCode"]').prop('disabled', true);
+
+            $.ajax({
+                url: '/admin/deliverybyid?id=' + id,
+                dataType: "json",
+                type: "GET",
+                contentType: 'application/json; charset=utf-8',
+                async: true,
+                success: function (data) {
+                    entity = data;
+
+                    $('.modal [name]').each(function (i, el) {
+                        let prop = $(el).attr('name');
+
+                        if ($(el).attr('type') == 'checkbox') {
+                            $(el).prop('checked', entity[prop]);
+                        }
+                        else {
+                            $(el).val(entity[prop]);
+                        }
+                    });
+
+                    $('.modal').modal('show');
+                },
+                error: function (xhr) {
+                    showErrorToast('Có lỗi xảy ra trong quá trình xử lý.');
+                }
+            });
+        }
+
+        $('.modal input[required="required"]').on('blur', function () {
+            let prop = $(this).attr('name');
+
+            if ($(this).val() != '') {
+                $(`span[field="${prop}"]`).text('');
+            }
+            else {
+                let label = $(`label[field="${prop}"]`).text();
+                $(`span[field="${prop}"]`).text(label + ' không được để trống');
+            }
+        })
+
+        $('#deliveryModal #btnSave').on('click', function () {
+            $('.modal [name]').each(function (i, el) {
+                let prop = $(el).attr('name');
+
+                if ($(el).attr('type') == 'checkbox') {
+                    entity[prop] = $(el).is(":checked");
+                }
+                else {
+                    entity[prop] = $(el).val();
+                }
+            });
+
+            validateBeforeSave();
+        })
+
+        function validateBeforeSave() {
+            var valid = true;
+
+            $('#deliveryModal input[required="required"]').each(function (i, el) {
+                let prop = $(this).attr('name');
+
+                if ($(el).val() != '') {
+                    $(`span[field="${prop}"]`).text('');
+                }
+                else {
+                    valid = false;
+                    let label = $(`label[field="${prop}"]`).text();
+                    $(`span[field="${prop}"]`).text(label + ' không được để trống');
+                }
+            });
+
+            if (valid) {
+                // CHeck tồn tại phương thức vận chuyển chưa
+                let cateCode = $('#deliveryModal #deliveryCode').val();
+
+                $.ajax({
+                    url: '/admin/existdeliverycode?code=' + cateCode + (editMode == 'Edit' ? ('&id=' + entity.id) : ''),
+                    dataType: "json",
+                    type: "GET",
+                    contentType: 'application/json; charset=utf-8',
+                    async: true,
+                    success: function (data) {
+                        if (!data) {
+                            executeSave();
+                        }
+                        else {
+                            $('#deliveryModal #deliveryCode').next().text('Phương thức vận chuyển đã tồn tại');
+                        }
+                    },
+                    error: function (xhr) {
+                        showErrorToast('Có lỗi xảy ra trong quá trình xử lý.');
+                    }
+                });
+            }
+
+            return valid;
+        }
+
+        function executeSave() {
+            $('.modal [name]').each(function (i, el) {
+                let prop = $(el).attr('name');
+
+                if ($(el).attr('type') == 'checkbox') {
+                    entity[prop] = $(el).is(":checked");
+                }
+                else {
+                    entity[prop] = $(el).val();
+                }
+            });
+
+            $.ajax({
+                url: '/admin/' + (editMode == 'Edit' ? 'UpdateDelivery' : 'InsertDelivery'),
+                dataType: "json",
+                type: (editMode == 'Edit' ? 'PUT' : 'POST'),
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify(entity),
+                async: true,
+                success: function (data) {
+                    window.location.href = data.redirectToUrl;
+                },
+                error: function (xhr) {
+                    showErrorToast('Có lỗi xảy ra trong quá trình xử lý.');
+                }
+            });
+        }
+
+        function deleteDelivery(id) {
+            if (confirm("Bạn có chắc muốn xóa phương thức vận chuyển này không?")) {
+                $.ajax({
+                    url: '/admin/deletedelivery?id=' + id,
+                    dataType: "json",
+                    type: 'DELETE',
+                    contentType: 'application/json; charset=utf-8',
+                    async: true,
+                    success: function (data) {
+                        window.location.href = data.redirectToUrl;
+                    },
+                    error: function (xhr) {
+                        showErrorToast('Có lỗi xảy ra trong quá trình xử lý.');
+                    }
+                });
+            }
+        }
+
+        function clearValueInput() {
+            entity = {};
+            $('.modal [name]').each(function (i, el) {
+                let prop = $(el).attr('name');
+
+                if ($(el).attr('type') == 'checkbox') {
+                    $(el).prop('checked', true);
+                }
+                else {
+                    $(el).val('');
+                }
+            });
+            $('.modal .field-validation-valid').each(function (i, el) {
+                $(el).text('');
+            });
+
+            $('.modal #modalLabel').text(editMode == "Edit" ? 'Sửa phương thức vận chuyển' : 'Thêm phương thức vận chuyển');
+        }
+
+        function showErrorToast(msg) {
+            $('.toast-placement').removeClass('bg-success').addClass('bg-danger');
+            $('.toast-placement .title').text('Thất bại');
+            $('.toast-placement .toast-body').text(msg);
+            $('.toast-placement').toast('show');
+        }
+
+        function showSuccessToast(msg) {
+            $('.toast-placement').removeClass('bg-danger').addClass('bg-success');
+            $('.toast-placement .title').text('Thành công');
+            $('.toast-placement .toast-body').text(msg);
+            $('.toast-placement').toast('show');
+        }
+    </script>
+}

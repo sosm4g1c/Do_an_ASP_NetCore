@@ -1,0 +1,240 @@
+﻿@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+@section css {
+    <!-- Libraries Stylesheet -->
+    <link href="~/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+}
+
+@section scripts {
+    <script src="~/lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="~/js/main.js"></script>
+}
+
+<!-- Navbar Start -->
+<div class="container-fluid mb-5">
+    <div class="row px-xl-5">
+        <div class="col-lg-3 d-none d-lg-block">
+            <a class="btn shadow-none d-flex align-items-center justify-content-between bg-primary text-white w-100" data-toggle="collapse" href="#navbar-vertical" style="height: 50px; margin-top: -1px; padding: 0 30px;">
+                <h6 class="m-0">Danh mục sách</h6>
+                <i class="fa fa-angle-down text-dark"></i>
+            </a>
+            <nav class="collapse show navbar navbar-vertical navbar-light align-items-start p-0 border border-top-0 border-bottom-0" id="navbar-vertical">
+                <div class="navbar-nav w-100 overflow-auto" style="height: 410px">
+                    @{
+                        if (ViewBag.CategoryList != null && ViewBag.CategoryList.Count > 0)
+                        {
+                            foreach (var item in ViewBag.CategoryList)
+                            {
+                                <a href="/home/search?categoryId=@item.Id" class="nav-item nav-link">@item.CategoryName</a>
+                            }
+                        }
+                        else
+                        {
+                            <div class="h-100 w-100 d-flex align-items-center justify-content-center">
+                                <span>Không có danh mục</span>
+                            </div>
+                        }
+                    }
+                </div>
+            </nav>
+        </div>
+        <div class="col-lg-9">
+            <nav class="navbar navbar-expand-lg bg-light navbar-light py-3 py-lg-0 px-0">
+                <a href="/home" class="text-decoration-none d-block d-lg-none">
+                    <div id="logoImg"></div>
+                </a>
+            </nav>
+            <div id="header-carousel" class="carousel slide" data-ride="carousel">
+                <div class="carousel-inner">
+                    <div class="carousel-item active" style="height: 460px;">
+                        <img class="img-fluid" src="~/img/banner-1.jpg" alt="Image">
+                        <div class="carousel-caption d-flex flex-column align-items-center justify-content-center">
+                            <div class="p-3" style="max-width: 700px;">
+                                <h4 class="text-light text-uppercase font-weight-medium mb-3">Khuyến mại 10% cho đơn hàng đầu tiên</h4>
+                                @{
+                                    if (ViewBag.CategoryList != null && ViewBag.CategoryList.Count > 0)
+                                    {
+                                        Random random = new Random();
+                                        var cate1 = ViewBag.CategoryList[random.Next(0, (ViewBag.CategoryList.Count - 1))];
+
+                                        <h3 class="display-4 text-white font-weight-semi-bold mb-4">@cate1.CategoryName</h3>
+                                        <a href="/home/search?categoryId=@cate1.Id" class="btn btn-light py-2 px-3">Mua ngay</a>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="carousel-item" style="height: 460px;">
+                        <img class="img-fluid" src="~/img/banner-2.jpg" alt="Image">
+                        <div class="carousel-caption d-flex flex-column align-items-center justify-content-center">
+                            <div class="p-3" style="max-width: 700px;">
+                                <h4 class="text-light text-uppercase font-weight-medium mb-3">Đăng ký thẻ thành viên để nhận nhiều ưu đãi</h4>
+                                @{
+                                    if (ViewBag.CategoryList != null && ViewBag.CategoryList.Count > 0)
+                                    {
+                                        Random random = new Random();
+                                        var cate2 = ViewBag.CategoryList[random.Next(0, (ViewBag.CategoryList.Count - 1))];
+
+                                        <h3 class="display-4 text-white font-weight-semi-bold mb-4">@cate2.CategoryName</h3>
+                                        <a href="/home/search?categoryId=@cate2.Id" class="btn btn-light py-2 px-3">Mua ngay</a>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <a class="carousel-control-prev" href="#header-carousel" data-slide="prev">
+                    <div class="btn btn-dark" style="width: 45px; height: 45px;">
+                        <span class="carousel-control-prev-icon mb-n2"></span>
+                    </div>
+                </a>
+                <a class="carousel-control-next" href="#header-carousel" data-slide="next">
+                    <div class="btn btn-dark" style="width: 45px; height: 45px;">
+                        <span class="carousel-control-next-icon mb-n2"></span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Navbar End -->
+<!-- Products Start -->
+<div class="container-fluid pt-5">
+    <div class="text-center">
+        <h2 class="section-title px-5"><span class="px-2">Sách bán chạy</span></h2>
+    </div>
+    <div class="d-flex flex-row-reverse view-more px-xl-5 pb-2">
+        <a href="/home/search?sortType=2">Xem thêm <i class="fa fa-angle-double-right"></i></a>
+    </div>
+    <div class="row px-xl-5 pb-3">
+        @{
+            if (ViewBag.BookSelling != null && ViewBag.BookSelling.Count > 0)
+            {
+                foreach (var book in ViewBag.BookSelling)
+                {
+                    <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
+                        <div class="card product-item border-0 mb-4">
+                            <div class="card-header product-img position-relative overflow-hidden bg-transparent border p-0">
+                                <img class="img-fluid  w-100 h-100 object-fit-contain" src="/uploads/@book.BookImage" alt="Ảnh bìa sách">
+                            </div>
+                            <div class="card-body border-left border-right text-center p-0 pt-4 pb-1">
+                                <h6 class="text-truncate px-2 mb-3" title="@book.BookName">@book.BookName</h6>
+                                <div class="d-flex justify-content-center">
+                                    @if (book.PriceDiscount != null)
+                                    {
+                                        <h6>@(book.PriceDiscount.ToString("#,##0")) đ</h6>
+                                        <h6 class="text-muted ml-2"><del>@(string.Concat(((int)book.Price).ToString("#,##0"), " đ"))</del></h6>
+                                    }
+                                    else
+                                    {
+                                        <h6>@(book.Price.ToString("#,##0")) đ</h6>
+                                    }
+                                </div>
+                                <div class="sold-number pr-2">Đã bán @book.SoldQuantity</div>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between bg-light border">
+                                <a href="/home/detail?id=@book.Id" class="btn btn-sm text-dark p-0"><i class="fas fa-eye text-primary mr-1"></i>Xem</a>
+                                <a href="/cart/addtocart?bookId=@book.Id" class="btn btn-sm text-dark p-0"><i class="fas fa-shopping-cart text-primary mr-1"></i>Thêm vào giỏ hàng</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        }
+    </div>
+</div>
+<!-- Products End -->
+<!-- Subscribe Start -->
+<div class="container-fluid bg-secondary my-5">
+    <div class="row justify-content-md-center px-xl-5">
+        <div class="col-md-6 col-12 py-5">
+            <div class="text-center mb-2 pb-2">
+                <h2 class="section-title px-5 mb-3"><span class="bg-secondary px-2">Giới thiệu về chúng tôi</span></h2>
+                <p>
+                    Book Store là hệ thống nhà sách điện tử thân thuộc của nhiều gia đình Việt kể từ nhà sách đầu tiên ra đời đến nay.
+                </p>
+                <p>
+                    Khách hàng có thể dễ dàng tìm thấy những cuốn sách hay, đa thể loại của nhiều nhà xuất bản, công ty sách trong và ngoài nước. Cùng tiêu chí không ngừng hoàn thiện, nâng cao chất lượng sản phẩm, dịch vụ, Book Store cam kết mang đến cho khách hàng trải nghiệm mua sắm trực tuyến an toàn, tiện lợi: cách đặt hàng đơn giản, phương thức thanh toán đa dạng, dịch vụ chăm sóc khách hàng tận tình, chu đáo.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Subscribe End -->
+<!-- Products Start -->
+<div class="container-fluid pt-5">
+    <div class="text-center">
+        <h2 class="section-title px-5"><span class="px-2">Sách mới</span></h2>
+    </div>
+    <div class="d-flex flex-row-reverse view-more px-xl-5 pb-2">
+        <a href="/home/search?sortType=1">Xem thêm <i class="fa fa-angle-double-right"></i></a>
+    </div>
+    <div class="row px-xl-5 pb-3">
+        @{
+            if (ViewBag.BookNews != null && ViewBag.BookNews.Count > 0)
+            {
+                foreach (var book in ViewBag.BookNews)
+                {
+                    <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
+                        <div class="card product-item border-0 mb-4">
+                            <div class="card-header product-img position-relative overflow-hidden bg-transparent border p-0">
+                                <img class="img-fluid  w-100 h-100 object-fit-contain" src="/uploads/@book.BookImage" alt="Ảnh bìa sách">
+                            </div>
+                            <div class="card-body border-left border-right text-center p-0 pt-4 pb-1">
+                                <h6 class="text-truncate px-2 mb-3" title="@book.BookName">@book.BookName</h6>
+                                <div class="d-flex justify-content-center">
+                                    @if (book.PriceDiscount != null)
+                                    {
+                                        <h6>@(book.PriceDiscount.ToString("#,##0")) đ</h6>
+                                        <h6 class="text-muted ml-2"><del>@(string.Concat(((int)book.Price).ToString("#,##0"), " đ"))</del></h6>
+                                    }
+                                    else
+                                    {
+                                        <h6>@(book.Price.ToString("#,##0")) đ</h6>
+                                    }
+                                </div>
+                                <div class="sold-number pr-2">Đã bán @book.SoldQuantity</div>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between bg-light border">
+                                <a href="/home/detail?id=@book.Id" class="btn btn-sm text-dark p-0"><i class="fas fa-eye text-primary mr-1"></i>Xem</a>
+                                <a href="/cart/addtocart?bookId=@book.Id" class="btn btn-sm text-dark p-0"><i class="fas fa-shopping-cart text-primary mr-1"></i>Thêm vào giỏ hàng</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        }
+    </div>
+</div>
+<!-- Products End -->
+<!-- Products Start -->
+<div class="container-fluid pt-5">
+    <div class="text-center">
+        <h2 class="section-title px-5"><span class="px-2">Tin tức</span></h2>
+    </div>
+    <div class="d-flex flex-row-reverse view-more px-xl-5 pb-2">
+        <a href="/home/news">Xem thêm <i class="fa fa-angle-double-right"></i></a>
+    </div>
+    <div class="row px-xl-5 pb-3">
+        @{
+            if (ViewBag.News != null && ViewBag.News.Count > 0)
+            {
+                foreach (var news in ViewBag.News)
+                {
+                    <div class="col-lg-6 col-md-12 d-flex news-item mb-4" role="button" title="@news.Title" onclick="location.href='/home/newsdetail?id=@news.Id'">
+                        <div class="news-img p-0">
+                            <img class="img-fluid w-100 h-100 object-fit-contain" src="/uploads/@news.NewsImage" alt="Ảnh bìa sách">
+                        </div>
+                        <div class="border-right p-2 pb-0">
+                            <h5 class="text-truncate title-break mb-2">@news.Title</h5>
+                            <div class="sold-number">@news.Summary</div>
+                        </div>
+                    </div>
+                }
+            }
+        }
+    </div>
+</div>
+<!-- Products End -->

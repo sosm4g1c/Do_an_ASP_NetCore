@@ -1,0 +1,144 @@
+﻿@using BookManagement.Models.Model;
+@using X.PagedList;
+@using X.PagedList.Mvc.Core;
+@using BookManagement.Models.Entity;
+@model BookPagingModel
+
+@{
+    ViewData["Title"] = "Quản lý sách";
+    ViewData["HeaderTitle"] = "Quản lý sách";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Menu = 3;
+}
+
+@section css {
+}
+
+<div class="book-management d-flex justify-content-between align-items-center pb-3">
+    <div class="d-flex">
+        @using (@Html.BeginForm("BookManagement", "Admin", new { keyword = Model.Keyword, categoryId = Model.CategoryId }, FormMethod.Get, false, new { @class = "ctn-search d-flex" }))
+        {
+            <div class="navbar-nav navbar-nav-custom align-items-center navbar-detached px-2">
+                <div class="nav-item d-flex align-items-center">
+                    <i class="bx bx-search fs-4 lh-0"></i>
+                    @Html.TextBoxFor(m => m.Keyword, new { @class = "form-control border-0 shadow-none", @placeholder="Tìm sách..." })
+                </div>
+            </div>
+            <div class="px-2">
+                @Html.DropDownList("CategoryId", (IEnumerable<SelectListItem>) ViewBag.CategoryList, new { @class = "form-select navbar-detached w-px-250" })
+            </div>
+            <input type="submit" class="btn btn-primary" value="Lọc" style="height: fit-content;" />
+        }
+    </div>
+    <button type="button" class="btn btn-primary" style="height: fit-content;" onclick="location.href='/admin/bookdetail'">
+        Thêm mới
+    </button>
+</div>
+<div class="card">
+    <div class="table-responsive text-nowrap">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Bìa sách</th>
+                    <th>Mã sách</th>
+                    <th>Tên sách</th>
+                    <th>Danh mục</th>
+                    <th>Số lượng</th>
+                    <th>Đã bán</th>
+                    <th>Giá tiền</th>
+                    <th>Giá khuyến mại</th>
+                    <th>Trạng thái</th>
+                    <th class="action">Hành động</th>
+                </tr>
+            </thead>
+            <tbody class="table-border-bottom-0">
+                @{
+                    if (Model.Paging.DataPaging != null && Model.Paging.DataPaging.Any())
+                    {
+                        @foreach (var item in Model.Paging.DataPaging)
+                        {
+                            <tr>
+                                <td>
+                                    <img src="/uploads/@item.BookImage" class="img-book-td border mx-1">
+                                </td>
+                                <td>@item.BookCode</td>
+                                <td title="@item.BookName"><strong>@item.BookName</strong></td>
+                                <td>@item.CategoryName</td>
+                                <td>@item.Quantity</td>
+                                <td>@item.SoldQuantity</td>
+                                <td>@(item.Price.ToString("#,##0")) đ</td>
+                                <td>@(item.PriceDiscount != null ? string.Concat(((int)item.PriceDiscount).ToString("#,##0"), " đ") : "")</td>
+                                <td><span class="badge @(item.IsActive ? "bg-label-success" : "bg-label-danger") me-1">@(item.IsActive ? "Đang hoạt động" : "Không hoạt động")</span></td>
+                                <td class="action">
+                                    <div class="d-flex h-100">
+                                        <a class="h-100 w-px-30" href="/admin/bookdetail?id=@item.Id" title="Sửa"><i class="bx bx-edit-alt me-1"></i></a>
+                                        <a class="h-100 w-px-30" onclick="deleteBook(@item.Id)" title="Xóa"><i class="bx bx-trash me-1"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr class="empty-table">
+                            <td colspan="10">
+                                <div class="ctn-empty-table w-100 my-5 text-center">
+                                    <img src="~/img/empty_data_icon.png" class="w-px-100" />
+                                    <div>Không có dữ liệu</div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="d-flex justify-content-between align-items-center px-3 py-2 border-top">
+        <h6 class="m-0">Tổng số: <strong>@Model.Paging.TotalRecord</strong> bản ghi</h6>
+        <nav aria-label="Page navigation">
+            @Html.PagedListPager((IPagedList)Model.Paging.DataPaging, page => Url.Action("bookmanagement", "admin", new { pageIndex = page, keyword = Model.Keyword, categoryId = Model.CategoryId }),  new PagedListRenderOptions {
+            LiElementClasses = new string[] { "page-item" },
+            PageClasses = new string[] { "page-link" },
+            UlElementClasses = new string[] { "pagination justify-content-center mb-1" },
+            MaximumPageNumbersToDisplay = 5,
+            })
+        </nav>
+    </div>
+</div>
+
+
+@section scripts {
+    <script>
+        function deleteBook(id) {
+            if (confirm("Bạn có chắc muốn xóa cuốn sách này không?")) {
+                $.ajax({
+                    url: '/admin/deletebook?id=' + id,
+                    dataType: "json",
+                    type: 'DELETE',
+                    contentType: 'application/json; charset=utf-8',
+                    async: true,
+                    success: function (data) {
+                        window.location.href = data.redirectToUrl;
+                    },
+                    error: function (xhr) {
+                        showErrorToast('Có lỗi xảy ra trong quá trình xử lý.');
+                    }
+                });
+            }
+        }
+
+        function showErrorToast(msg) {
+            $('.toast-placement').removeClass('bg-success').addClass('bg-danger');
+            $('.toast-placement .title').text('Thất bại');
+            $('.toast-placement .toast-body').text(msg);
+            $('.toast-placement').toast('show');
+        }
+
+        function showSuccessToast(msg) {
+            $('.toast-placement').removeClass('bg-danger').addClass('bg-success');
+            $('.toast-placement .title').text('Thành công');
+            $('.toast-placement .toast-body').text(msg);
+            $('.toast-placement').toast('show');
+        }
+    </script>
+}

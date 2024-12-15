@@ -1,0 +1,315 @@
+﻿@using BookManagement.Models.Model;
+@using System.Globalization;
+@using static BookManagement.Constant.Enumerations;
+@model DashboardModel
+
+@{
+    ViewData["Title"] = "Thống kê";
+    ViewData["HeaderTitle"] = "Thống kê";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Menu = 1;
+}
+
+@section css {
+}
+
+@section scripts {
+    <!-- Page JS -->
+    <script src="~/assets/js/dashboards-analytics.js"></script>
+
+    <script>
+        // Order Statistics Chart
+        // --------------------------------------------------------------------
+        const chartOrderStatistics = document.querySelector('#orderBookStatisticsChart'),
+            orderChartConfig = {
+                chart: {
+                    height: 275,
+                    width: 250,
+                    type: 'donut'
+                },
+                labels: ['Chờ lấy hàng', 'Đang giao hàng', 'Đơn hàng hủy', 'Đơn hoàn thành'],
+                series: [@Model.TotalOrder.Waiting, @Model.TotalOrder.Delivery, @Model.TotalOrder.Cancel, @Model.TotalOrder.Complete],
+                colors: [config.colors.info, config.colors.primary, config.colors.secondary, config.colors.success],
+                stroke: {
+                    width: 1,
+                    colors: config.colors.white
+                },
+                dataLabels: {
+                    enabled: false,
+                    formatter: function (val, opt) {
+                        return (val).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+                    }
+                },
+                legend: {
+                    show: false
+                },
+                grid: {
+                    padding: {
+                        top: 0,
+                        bottom: 0,
+                        right: 15
+                    }
+                },
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            size: '65%',
+                            labels: {
+                                show: true,
+                                value: {
+                                    fontSize: '1.4rem',
+                                    fontFamily: 'Public Sans',
+                                    color: config.colors.headingColor,
+                                    offsetY: -15,
+                                    formatter: function (val) {
+                                        return (val).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+                                    }
+                                },
+                                name: {
+                                    offsetY: 20,
+                                    fontFamily: 'Public Sans'
+                                },
+                                total: {
+                                    show: true,
+                                    fontSize: '0.8125rem',
+                                    color: config.colors.axisColor,
+                                    label: 'Đơn hàng',
+                                    formatter: function (w) {
+                                        return (@Model.TotalOrder.Waiting + @Model.TotalOrder.Delivery + @Model.TotalOrder.Cancel + @Model.TotalOrder.Complete).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        if (typeof chartOrderStatistics !== undefined && chartOrderStatistics !== null) {
+            const statisticsChart = new ApexCharts(chartOrderStatistics, orderChartConfig);
+            statisticsChart.render();
+        }
+
+        // Money Statistics Chart
+        // --------------------------------------------------------------------
+        const chartMoneyStatistics = document.querySelector('#moneyStatisticsChart'),
+            moneyChartConfig = {
+                chart: {
+                    height: 275,
+                    width: 250,
+                    type: 'donut'
+                },
+                labels: ['Chờ lấy hàng', 'Đang giao hàng', 'Đơn hàng hủy', 'Đơn hoàn thành'],
+                series: [@Model.TotalMoney.Waiting, @Model.TotalMoney.Delivery, @Model.TotalMoney.Cancel, @Model.TotalMoney.Complete],
+                colors: [config.colors.info, config.colors.primary, config.colors.secondary, config.colors.success],
+                stroke: {
+                    width: 1,
+                    colors: config.colors.white
+                },
+                dataLabels: {
+                    enabled: false,
+                    formatter: function (val, opt) {
+                        return (val).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+                    }
+                },
+                legend: {
+                    show: false
+                },
+                grid: {
+                    padding: {
+                        top: 0,
+                        bottom: 0,
+                        right: 15
+                    }
+                },
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            size: '65%',
+                            labels: {
+                                show: true,
+                                value: {
+                                    fontSize: '1.4rem',
+                                    fontFamily: 'Public Sans',
+                                    color: config.colors.headingColor,
+                                    offsetY: -15,
+                                    formatter: function (val) {
+                                        return (val).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+                                    }
+                                },
+                                name: {
+                                    offsetY: 20,
+                                    fontFamily: 'Public Sans'
+                                },
+                                total: {
+                                    show: true,
+                                    fontSize: '0.8125rem',
+                                    color: config.colors.axisColor,
+                                    label: 'Doanh thu(VNĐ)',
+                                    formatter: function (w) {
+                                        return (@Model.TotalMoney.Complete).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        if (typeof chartMoneyStatistics !== undefined && chartMoneyStatistics !== null) {
+            const statisticsChart = new ApexCharts(chartMoneyStatistics, moneyChartConfig);
+            statisticsChart.render();
+        }
+    </script>
+}
+
+<!-- Content -->
+<div class="row">
+    <div class="col-lg-3 col-md-6 col-6 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="card-title d-flex align-items-start justify-content-between">
+                    <div class="avatar flex-shrink-0">
+                        <img src="~/assets/img/icons/unicons/yellow-clock.png"
+                             alt="Credit Card"
+                             class="rounded" />
+                    </div>
+                </div>
+                <span>Đơn hàng cần xử lý</span>
+                <h3 class="card-title mb-2">@(Model.OrderWaiting.ToString("#,##0"))</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 col-6 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="card-title d-flex align-items-start justify-content-between">
+                    <div class="avatar flex-shrink-0">
+                        <img src="~/assets/img/icons/unicons/book.png" alt="Credit Card" class="rounded" />
+                    </div>
+                </div>
+                <span class="d-block mb-1">Số lượng đầu sách</span>
+                <h3 class="card-title text-nowrap mb-2">@(Model.TotalBook.ToString("#,##0"))</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 col-6 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="card-title d-flex align-items-start justify-content-between">
+                    <div class="avatar flex-shrink-0">
+                        <img src="~/assets/img/icons/unicons/category.png" alt="Credit Card" class="rounded" />
+                    </div>
+                </div>
+                <span class="fw-semibold d-block mb-1">Số lượng danh mục</span>
+                <h3 class="card-title mb-2">@(Model.TotalCategory.ToString("#,##0"))</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 col-6 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="card-title d-flex align-items-start justify-content-between">
+                    <div class="avatar flex-shrink-0">
+                        <img src="~/assets/img/icons/unicons/voucher.png"
+                             alt="chart success"
+                             class="rounded" />
+                    </div>
+                </div>
+                <span class="fw-semibold d-block mb-1">Số mã giảm giá</span>
+                <h3 class="card-title mb-2">@(Model.TotalVoucher.ToString("#,##0"))</h3>
+            </div>
+        </div>
+    </div>
+
+</div>
+<div class="row">
+    <!-- Expense Overview -->
+    <div class="col-md-8 col-lg-8 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <ul class="nav nav-pills" role="tablist">
+                    <li class="nav-item">
+                        <a href="/admin/dashboard" class="nav-link @(Model.ViewType == (int)DashboardViewType.Week ? "active" : "")">Tuần</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/dashboard?viewType=2" class="nav-link @(Model.ViewType == (int)DashboardViewType.Month ? "active" : "")">Tháng</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/dashboard?viewType=3" class="nav-link @(Model.ViewType == (int)DashboardViewType.Quarter ? "active" : "")">Quý</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body px-0">
+                <div class="tab-content p-0">
+                    <div class="tab-pane show active">
+                        <div class="d-flex p-4 pt-3">
+                            <div class="avatar flex-shrink-0 me-3">
+                                <span class="avatar-initial rounded bg-label-primary"><i class="bx bx-dollar"></i></span>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 me-1">Thời gian</h6>
+                                <small class="text-muted d-block">@(Model.StartDate.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture)) - @(Model.EndDate.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture))</small>
+                            </div>
+                        </div>
+
+                        <div class="row mx-2">
+                            <div class="col-xl-6 col-md-12 mb-4">
+                                <h5>Tổng đơn hàng</h5>
+                                @* <h3 class="card-title mb-2">$4,679</h3> *@
+                                <div id="orderBookStatisticsChart" class="text-webkit-center"></div>
+                            </div>
+                            <div class="col-xl-6 col-md-12 mb-4">
+                                <h5 class="d-block mb-1">Tổng doanh thu(VNĐ)</h5>
+                                @* <h3 class="card-title text-nowrap mb-2">$2,456</h3> *@
+                                <div id="moneyStatisticsChart" class="text-webkit-center"></div>
+                            </div>
+                        </div>
+
+                        <div id="ctn-explain" class="d-flex justify-content-center">
+                            <div class="d-flex align-items-center me-3"><div class="explain-color me-1 cl-info"></div> Chờ lấy hàng</div>
+                            <div class="d-flex align-items-center me-3"><div class="explain-color me-1 cl-primary"></div> Đang giao hàng</div>
+                            <div class="d-flex align-items-center me-3"><div class="explain-color me-1 cl-success"></div> Đơn hoàn thành</div>
+                            <div class="d-flex align-items-center"><div class="explain-color me-1 cl-secondary"></div> Đơn hàng hủy</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--/ Expense Overview -->
+    <!-- Order Statistics -->
+    <div class="col-md-4 col-lg-4 col-xl-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex align-items-center justify-content-between pb-0">
+                <div class="card-title mb-0">
+                    <h5 class="m-0 me-2">Sách bán chạy nhất</h5>
+                    <small class="text-muted">Top 10</small>
+                </div>
+            </div>
+            <div class="card-body tbl-best-seller">
+                <ul class="p-0 m-0">
+                    @{
+                        for (int i = 0; i < Model.BestSeller.Count; i++)
+                        {
+                            var book = Model.BestSeller.ElementAt(i);
+
+                            <li class="d-flex mt-4">
+                                <div class="avatar flex-shrink-0 me-3">
+                                    <span class="avatar-initial rounded bg-label-primary">@(i + 1)</span>
+                                </div>
+                                <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                    <div class="me-2">
+                                        <h6 class="mb-0">@book.BookName</h6>
+                                    </div>
+                                </div>
+                                <div class="user-progress">
+                                    <small class="fw-semibold">@book.TotalSold</small>
+                                </div>
+                            </li>
+                        }
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!--/ Order Statistics -->
+</div>
+<!-- / Content -->

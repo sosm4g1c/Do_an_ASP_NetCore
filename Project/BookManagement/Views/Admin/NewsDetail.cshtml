@@ -1,0 +1,140 @@
+﻿@using BookManagement.Constant;
+@using BookManagement.Models.Entity;
+@model News
+
+@{
+    ViewData["Title"] = "Quản lý tin tức";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Menu = 7;
+}
+
+@section css {
+
+}
+
+<div class="d-flex align-items-center">
+    <a href="/admin/newsmanagement">
+        <i class="menu-icon tf-icons bx bx-arrow-back" style="font-size: 1.5em;"></i>
+    </a>
+
+    <h5 class="m-0">Tin tức</h5>
+</div>
+
+<div class="card mt-3">
+    <div class="card-body">
+        @using (@Html.BeginForm("NewsDetail", "Admin", FormMethod.Post))
+        {
+            @Html.HiddenFor(m => m.Id)
+            <div class="book-detail row">
+                <div class="col-xl-4 col-md-12">
+                    <div class="mb-3 me-2">
+                        <label class="form-label" for="basic-default-fullname">Ảnh bìa</label>
+                        <div class="img-book-upload img-new-height w-100 border">
+                            <img id="imgNews" src="/uploads/@(Model.NewsImage ?? "img-empty.png")" class="h-100 w-100" alt="Chọn ảnh bìa" />
+                            <input type="file" id="inpImgNews" accept=".png,.jpg" onchange="uploadNewsImg(this)" hidden />
+                        </div>
+                        @Html.ValidationMessageFor(m=>m.NewsImage, "", new { @class = "text-danger" })
+                        @Html.HiddenFor(m => m.NewsImage)
+                    </div>
+                </div>
+                <div class="row col-xl-8 col-md-12">
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label" for="basic-default-fullname">Tiêu đề</label>
+                        @Html.TextBoxFor(m => m.Title, new { @class="form-control", required="required", maxlength="255", placeholder="Tiêu đề" })
+                        @Html.ValidationMessageFor(m=>m.Title, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label" for="basic-default-fullname">Tóm tắt</label>
+                        @Html.TextAreaFor(m => m.Summary, new { @class="form-control", required="required", maxlength="255", placeholder="Tóm tắt", rows="5" })
+                        @Html.ValidationMessageFor(m=>m.Summary, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="basic-default-message">Nội dung</label>
+
+                @Html.TextAreaFor(model => model.Content, new { @id = "FullContent", @class = "form-control" })
+                @Html.ValidationMessageFor(m=>m.Content, "", new { @class = "text-danger" })
+                <script src="@Url.Content("~/js/ckeditor/ckeditor.js")"></script>
+                <script>
+                    CKEDITOR.replace("FullContent");
+                    CKEDITOR.disableAutoInline = true;
+                </script>
+            </div>
+
+            <div class="d-flex align-items-center justify-content-end">
+                <div class="d-flex">
+                    <button type="button" class="btn btn-outline-secondary mx-2" onclick="location.href='/admin/newsmanagement';">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Lưu</button>
+                </div>
+            </div>
+            @Html.EditorFor(model => model.CreatedDate, new { @type = "date", @class="d-none hide-cls" })
+        }
+    </div>
+</div>
+
+
+@section scripts {
+    <script type="text/javascript">
+        $('.img-book-upload').click(function () {
+            $('#inpImgNews')[0].click();
+        });
+
+        $('form [name]').focus(function () {
+            let attrName = $(this).attr('name');
+            $(`span[data-valmsg-for="${attrName}"]`).text('');
+        });
+
+        function uploadNewsImg(input) {
+            $(`span[data-valmsg-for="NewsImage"]`).text('');
+
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    var data = {
+                        BookID: '@Model.Id',
+                        BookImageUri: e.target.result.split(",")[1]
+                    };
+
+                    //call api
+                    $.ajax({
+                        method: "POST",
+                        url: "/admin/UploadImage",
+                        data: JSON.stringify(data),
+                        dataType: "json",
+                        contentType: 'application/json; charset=utf-8',
+                        async: true,
+                    }).done(function (res) {
+                        if (res.success) {
+                            $('#imgNews').attr('src', ('/uploads/' + res.fileName));
+                            $('input#NewsImage').val(res.fileName);
+                        } else {
+                            showErrorToast('Có lỗi xảy ra trong quá trình xử lý.');
+                        }
+                    }).fail(function (res) {
+                        showErrorToast('Có lỗi xảy ra trong quá trình xử lý.');
+                    })
+                }
+
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function showErrorToast(msg) {
+            $('.toast-placement').removeClass('bg-success').addClass('bg-danger');
+            $('.toast-placement .title').text('Thất bại');
+            $('.toast-placement .toast-body').text(msg);
+            $('.toast-placement').toast('show');
+        }
+
+        function showSuccessToast(msg) {
+            $('.toast-placement').removeClass('bg-danger').addClass('bg-success');
+            $('.toast-placement .title').text('Thành công');
+            $('.toast-placement .toast-body').text(msg);
+            $('.toast-placement').toast('show');
+        }
+    </script>
+}

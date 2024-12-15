@@ -1,0 +1,56 @@
+﻿@using BookManagement.Constant;
+@using BookManagement.Models.Model;
+@using X.PagedList;
+@using X.PagedList.Mvc.Core;
+@using BookManagement.Models.Entity;
+@model PagingModel<News>
+
+@{
+    ViewData["Title"] = "Tin tức";
+}
+
+@section css {
+}
+
+@section scripts {
+}
+
+<div class="container-fluid mb-5">
+    <div class="row px-xl-5 py-2">
+        <div class="col-12 pb-3 d-flex justify-content-between">
+            <h6 class="m-0">Tổng số: <strong>@Model.TotalRecord</strong> tin tức</h6>
+            <nav aria-label="Page navigation">
+                @Html.PagedListPager((IPagedList)Model.DataPaging, page => Url.Action("news", "home", new { pageIndex = page }),  new PagedListRenderOptions {
+                LiElementClasses = new string[] { "page-item" },
+                PageClasses = new string[] { "page-link" },
+                UlElementClasses = new string[] { "pagination justify-content-center mb-3" },
+                MaximumPageNumbersToDisplay = 5,
+                })
+            </nav>
+        </div>
+        @{
+            if (Model.DataPaging != null && Model.DataPaging.Count > 0)
+            {
+                @foreach (var news in Model.DataPaging)
+                {
+                    <div class="col-lg-6 col-md-12 d-flex news-item mb-4" role="button" title="@news.Title" onclick="location.href='/home/newsdetail?id=@news.Id'">
+                        <div class="news-img p-0">
+                            <img class="img-fluid w-100 h-100 object-fit-contain" src="/uploads/@news.NewsImage" alt="Ảnh bìa sách">
+                        </div>
+                        <div class="border-right p-2 pb-0">
+                            <h5 class="text-truncate title-break mb-2">@news.Title</h5>
+                            <div class="sold-number">@news.Summary</div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="ctn-empty-table w-100 my-5 text-center">
+                    <img src="~/img/empty_data_icon.png" class="w-px-100" />
+                    <div>Không có dữ liệu</div>
+                </div>
+            }
+        }
+    </div>
+</div>

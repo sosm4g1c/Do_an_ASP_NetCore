@@ -1,0 +1,312 @@
+﻿@using BookManagement.Models.Model;
+@using X.PagedList;
+@using X.PagedList.Mvc.Core;
+@using BookManagement.Models.Entity;
+@model PagingModel<CategoryModel>
+
+@{
+    ViewData["Title"] = "Quản lý danh mục";
+    ViewData["HeaderTitle"] = "Danh mục sách";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Menu = 4;
+}
+
+@section css {
+}
+
+<div class="d-flex justify-content-end align-items-center pb-3">
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" onclick="addCategory()"
+            data-bs-target="#categoryModal" style="height: fit-content;">
+        Thêm mới
+    </button>
+</div>
+<div class="card">
+    <div class="table-responsive text-nowrap">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Mã danh mục</th>
+                    <th>Tên danh mục</th>
+                    <th>Số lượng sách</th>
+                    <th>Trạng thái</th>
+                    <th class="action">Hành động</th>
+                </tr>
+            </thead>
+            <tbody class="table-border-bottom-0">
+                @{
+                    if (Model.DataPaging != null && Model.DataPaging.Any())
+                    {
+                        @foreach (var item in Model.DataPaging)
+                        {
+                            <tr>
+                                <td><i class="fab fa-angular fa-lg text-danger me-3"></i> <strong>@item.CategoryCode</strong></td>
+                                <td>@item.CategoryName</td>
+                                <td>@item.TotalBook</td>
+                                <td><span class="badge @(item.IsActive ? "bg-label-success" : "bg-label-danger") me-1">@(item.IsActive ? "Đang hoạt động" : "Không hoạt động")</span></td>
+                                <td class="action">
+                                    <div class="d-flex h-100">
+                                        <a class="h-100 w-px-30" onclick="editCategory(@item.Id)" title="Sửa"><i class="bx bx-edit-alt me-1"></i></a>
+                                        <a class="h-100 w-px-30" onclick="deleteCategory(@item.Id, @item.TotalBook)" title="Xóa"><i class="bx bx-trash me-1"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr class="empty-table">
+                            <td colspan="5">
+                                <div class="ctn-empty-table w-100 my-5 text-center">
+                                    <img src="~/img/empty_data_icon.png" class="w-px-100" />
+                                    <div>Không có dữ liệu</div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="d-flex justify-content-between align-items-center p-3 pb-2 border-top">
+        <h6 class="m-0">Tổng số: <strong>@Model.TotalRecord</strong> bản ghi</h6>
+        <nav aria-label="Page navigation">
+            @Html.PagedListPager((IPagedList)Model.DataPaging, page => Url.Action("categorymanagement", "admin", new { pageIndex = page }),  new PagedListRenderOptions {
+            LiElementClasses = new string[] { "page-item" },
+            PageClasses = new string[] { "page-link" },
+            UlElementClasses = new string[] { "pagination justify-content-center mb-1" },
+            MaximumPageNumbersToDisplay = 5,
+            })
+        </nav>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="categoryModal" tabindex="-1" aria-hidden="true" data-bs-keyboard="false" data-bs-backdrop="static">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabel">Thêm danh mục</h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-2">
+                    <div class="col-lg-6 col-md-12 mb-3">
+                        <label class="form-label">Mã danh mục</label>
+                        <input type="text" maxlength="12" required="required" id="categoryCode" name="categoryCode" class="form-control" placeholder="Nhập mã" />
+                        <span class="text-danger field-validation-valid"></span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col mb-3">
+                        <label class="form-label">Tên danh mục</label>
+                        <input type="text" maxlength="255" required="required" id="categoryName" name="categoryName" class="form-control" placeholder="Nhập tên" />
+                        <span class="text-danger field-validation-valid"></span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col mb-0">
+                        <label class="form-label">Mô tả</label>
+                        <textarea class="form-control" maxlength="500" id="description" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-between align-items-center">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="isActive" name="isActive" checked />
+                    <label class="form-check-label">Trạng thái</label>
+                </div>
+                <div class="d-flex">
+                    <button type="button" class="btn btn-outline-secondary mx-2" data-bs-dismiss="modal">
+                        Đóng
+                    </button>
+                    <button id="btnSave" class="btn btn-primary">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        let entity = {}, editMode = "Add";
+
+        function addCategory() {
+            editMode = "Add";
+            clearValueInput();
+        }
+
+        function editCategory(id) {
+            editMode = "Edit";
+            clearValueInput();
+
+            $.ajax({
+                url: '/admin/categorybyid?id=' + id,
+                dataType: "json",
+                type: "GET",
+                contentType: 'application/json; charset=utf-8',
+                async: true,
+                success: function (data) {
+                    entity = data;
+
+                    $('.modal [name]').each(function (i, el) {
+                        let prop = $(el).attr('name');
+
+                        if ($(el).attr('type') == 'checkbox') {
+                            $(el).prop('checked', entity[prop]);
+                        }
+                        else {
+                            $(el).val(entity[prop]);
+                        }
+                    });
+
+                    $('.modal').modal('show');
+                },
+                error: function (xhr) {
+                    showErrorToast('Có lỗi xảy ra trong quá trình xử lý.');
+                }
+            });
+        }
+
+        $('.modal input[required="required"]').on('blur', function () {
+            if ($(this).val() != '') {
+                $(this).next().text('');
+            }
+            else {
+                let label = $(this).prev().text();
+                $(this).next().text(label + ' không được để trống');
+            }
+        })
+
+        $('#categoryModal #btnSave').on('click', function () {
+            validateBeforeSave();
+        })
+
+        function validateBeforeSave() {
+            var valid = true;
+
+            $('#categoryModal input[required="required"]').each(function (i, el) {
+                if ($(el).val() != '') {
+                    $(el).next().text('');
+                }
+                else {
+                    valid = false;
+                    let label = $(el).prev().text();
+                    $(el).next().text(label + ' không được để trống');
+                }
+            });
+
+            if (valid) {
+                // CHeck tồn tại Mã danh mục chưa
+                let cateCode = $('#categoryModal #categoryCode').val();
+
+                $.ajax({
+                    url: '/admin/existcategorycode?code=' + cateCode + (editMode == 'Edit' ? ('&id=' + entity.id) : ''),
+                    dataType: "json",
+                    type: "GET",
+                    contentType: 'application/json; charset=utf-8',
+                    async: true,
+                    success: function (data) {
+                        if (!data) {
+                            executeSave();
+                        }
+                        else {
+                            $('#categoryModal #categoryCode').next().text('Mã danh mục đã tồn tại');
+                        }
+                    },
+                    error: function (xhr) {
+                        showErrorToast('Có lỗi xảy ra trong quá trình xử lý.');
+                    }
+                });
+            }
+
+            return valid;
+        }
+
+        function executeSave() {
+            $('.modal [name]').each(function (i, el) {
+                let prop = $(el).attr('name');
+
+                if ($(el).attr('type') == 'checkbox') {
+                    entity[prop] = $(el).is(":checked");
+                }
+                else {
+                    entity[prop] = $(el).val();
+                }
+            });
+
+            $.ajax({
+                url: '/admin/' + (editMode == 'Edit' ? 'UpdateCategory' : 'InsertCategory'),
+                dataType: "json",
+                type: (editMode == 'Edit' ? 'PUT' : 'POST'),
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify(entity),
+                async: true,
+                success: function (data) {
+                    window.location.href = data.redirectToUrl;
+                },
+                error: function (xhr) {
+                    showErrorToast('Có lỗi xảy ra trong quá trình xử lý.');
+                }
+            });
+        }
+
+        function deleteCategory(id, totalBook) {
+            if (totalBook > 0) {
+                showErrorToast('Danh mục đã phát sinh dữ liệu.');
+            }
+            else {
+                if (confirm("Bạn có chắc muốn xóa danh mục này không?")) {
+                    $.ajax({
+                        url: '/admin/deletecategory?id=' + id,
+                        dataType: "json",
+                        type: 'DELETE',
+                        contentType: 'application/json; charset=utf-8',
+                        async: true,
+                        success: function (data) {
+                            window.location.href = data.redirectToUrl;
+                        },
+                        error: function (xhr) {
+                            showErrorToast('Có lỗi xảy ra trong quá trình xử lý.');
+                        }
+                    });
+                }
+            }
+        }
+
+        function clearValueInput() {
+            entity = {};
+            $('.modal [name]').each(function (i, el) {
+                let prop = $(el).attr('name');
+
+                if ($(el).attr('type') == 'checkbox') {
+                    $(el).prop('checked', true);
+                }
+                else {
+                    $(el).val('');
+                }
+            });
+            $('.modal .field-validation-valid').each(function (i, el) {
+                $(el).text('');
+            });
+
+            $('.modal #modalLabel').text(editMode == "Edit" ? 'Sửa danh mục' : 'Thêm danh mục');
+        }
+
+        function showErrorToast(msg) {
+            $('.toast-placement').removeClass('bg-success').addClass('bg-danger');
+            $('.toast-placement .title').text('Thất bại');
+            $('.toast-placement .toast-body').text(msg);
+            $('.toast-placement').toast('show');
+        }
+
+        function showSuccessToast(msg) {
+            $('.toast-placement').removeClass('bg-danger').addClass('bg-success');
+            $('.toast-placement .title').text('Thành công');
+            $('.toast-placement .toast-body').text(msg);
+            $('.toast-placement').toast('show');
+        }
+    </script>
+    }

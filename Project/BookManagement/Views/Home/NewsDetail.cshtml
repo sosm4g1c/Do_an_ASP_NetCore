@@ -1,0 +1,55 @@
+﻿@{
+    ViewData["Title"] = @ViewBag.News.Title;
+}
+
+@section css {
+}
+
+@section scripts {
+    <script src="~/js/main.js"></script>
+}
+<div class="d-flex view-more px-xl-5 pb-2">
+    <a href="javascript:history.back()"><i class="fa fa-angle-double-left"></i> Quay lại</a>
+</div>
+<!-- Shop Detail Start -->
+<div class="container-fluid pb-5 pt-3">
+    <div class="row px-xl-5">
+        <div class="col">
+            <div class="tab-content">
+                <div class="tab-pane fade show active">
+                    <h3 class="mb-3">@ViewBag.News.Title</h3>
+                    <div id="news-content" class="px-3 pt-3">
+                        @Html.Raw(ViewBag.News.Content)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Shop Detail End -->
+<!-- Products Start -->
+<div class="container-fluid py-5">
+    <div class="text-center mb-4">
+        <h2 class="section-title px-5"><span class="px-2">Tin tức khác</span></h2>
+    </div>
+    <div class="row px-xl-5">
+        @{
+            if (ViewBag.RelatedNews != null && ViewBag.RelatedNews.Count > 0)
+            {
+                @foreach (var news in ViewBag.RelatedNews)
+                {
+                    <div class="col-lg-6 col-md-12 d-flex news-item mb-4" role="button" title="@news.Title" onclick="location.href='/home/newsdetail?id=@news.Id'">
+                        <div class="news-img p-0">
+                            <img class="img-fluid w-100 h-100 object-fit-contain" src="/uploads/@news.NewsImage" alt="Ảnh bìa sách">
+                        </div>
+                        <div class="border-right p-2 pb-0">
+                            <h5 class="text-truncate title-break mb-2">@news.Title</h5>
+                            <div class="sold-number">@news.Summary</div>
+                        </div>
+                    </div>
+                }
+            }
+        }
+    </div>
+</div>
+<!-- Products End -->

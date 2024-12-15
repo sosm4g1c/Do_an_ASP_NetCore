@@ -1,0 +1,388 @@
+﻿@using System.Globalization
+@using BookManagement.Models.Entity
+@using BookManagement.Models.Model
+@using Newtonsoft.Json
+@using System.Security.Claims
+@using static BookManagement.Constant.Enumerations
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+    ViewData["Title"] = "Chi tiết";
+}
+
+@section css {
+    <!-- Libraries Stylesheet -->
+    <link href="~/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+}
+
+<!-- Shop Detail Start -->
+<div class="container-fluid py-5">
+    <div class="row px-xl-5">
+        <div class="col-lg-4 pb-5">
+            <div id="product-carousel" class="carousel slide" data-ride="carousel">
+                <div class="carousel-inner carousel-img border">
+                    <div class="carousel-item w-100 h-100 active">
+                        <img class="w-100 h-100 object-fit-contain" src="/uploads/@ViewBag.Book.BookImage" alt="Ảnh bìa sách">
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(ViewBag.Book.InfoImage))
+                    {
+                        var images = ViewBag.Book.InfoImage.Split(";");
+                        foreach (string image in images)
+                        {
+                            <div class="carousel-item w-100 h-100">
+                                <img class="w-100 h-100 object-fit-contain" src="/uploads/@image" alt="Ảnh sách">
+                            </div>
+                        }
+                    }
+                </div>
+                <a class="carousel-control-prev" href="#product-carousel" data-slide="prev">
+                    <i class="fa fa-2x fa-angle-left text-dark"></i>
+                </a>
+                <a class="carousel-control-next" href="#product-carousel" data-slide="next">
+                    <i class="fa fa-2x fa-angle-right text-dark"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="col-lg-8 pb-5">
+            <h3 class="font-weight-semi-bold">@ViewBag.Book.BookName</h3>
+            <div class="d-flex mb-3">
+                <small class="pt-1">Đã bán @ViewBag.Book.SoldQuantity</small>
+            </div>
+            <div class="d-flex">
+                <h3 class="font-weight-semi-bold mb-4">@(@ViewBag.Book.Price.ToString("#,##0")) đ</h3>
+                @if (@ViewBag.Book.PriceDiscount != null)
+                {
+                    <h3 class="text-muted ml-4"><del>@(string.Concat(((int)@ViewBag.Book.PriceDiscount).ToString("#,##0"), " đ"))</del></h3>
+                }
+            </div>
+            <div class="d-flex">
+                <p class="text-dark font-weight-medium mb-0 mr-3">Mã sách:</p>
+                <p>@ViewBag.Book.BookCode</p>
+            </div>
+            <div class="d-flex">
+                <p class="text-dark font-weight-medium mb-0 mr-3">Danh mục:</p>
+                <p>@ViewBag.Book.CategoryName</p>
+            </div>
+            <div class="d-flex">
+                <p class="text-dark font-weight-medium mb-0 mr-3">Tác giả:</p>
+                <p>@(string.IsNullOrEmpty(@ViewBag.Book.Author) ? "-" : @ViewBag.Book.Author)</p>
+            </div>
+            <div class="d-flex">
+                <p class="text-dark font-weight-medium mb-0 mr-3">Nhà xuất bản:</p>
+                <p>@(string.IsNullOrEmpty(@ViewBag.Book.Publisher) ? "-" : @ViewBag.Book.Publisher)</p>
+            </div>
+            <div class="d-flex">
+                <p class="text-dark font-weight-medium mb-0 mr-3">Năm xuất bản:</p>
+                @if (!string.IsNullOrEmpty(@ViewBag.Book.PublishTime))
+                {
+                    string[] times = ViewBag.Book.PublishTime.Split("-");
+
+                    <p>@times[1]-@times[0]</p>
+                }
+                else
+                {
+                    <p>-</p>
+                }
+            </div>
+            <div class="d-flex m-0">
+                <p class="text-dark font-weight-medium mb-0 mr-3">Trọng lượng (gram):</p>
+                <p>@(ViewBag.Book.BookWeight != null && ViewBag.Book.BookWeight != 0 ? @ViewBag.Book.BookWeight : "-")</p>
+            </div>
+            <div class="d-flex m-0">
+                <p class="text-dark font-weight-medium mb-0 mr-3">Kích Thước (cm):</p>
+                <p>@(string.IsNullOrEmpty(@ViewBag.Book.BookSize) ? "-" : @ViewBag.Book.BookSize)</p>
+            </div>
+            <div class="d-flex m-0">
+                <p class="text-dark font-weight-medium mb-0 mr-3">Số trang:</p>
+                <p>@(ViewBag.Book.BookPage != null && ViewBag.Book.BookPage != 0 ? @ViewBag.Book.BookPage : "-")</p>
+            </div>
+            <div class="d-flex m-0">
+                <small>@ViewBag.Book.Quantity sản phẩm có sẵn</small>
+            </div>
+            <form id="ctnAddCart" action="/cart/addtocart">
+                <div class="d-flex align-items-center mb-4 pt-1">
+                    <input type="number" class="d-none" name="bookId" value="@ViewBag.Book.Id">
+                    <div class="input-group quantity mr-3" style="width: 130px;">
+                        <div class="input-group-btn">
+                            <button type="button" class="btn btn-primary btn-minus" max-quantity="@ViewBag.Book.Quantity">
+                                <i class="fa fa-minus"></i>
+                            </button>
+                        </div>
+                        <input type="number" class="form-control bg-secondary text-center" name="quantity" value="1">
+                        <div class="input-group-btn">
+                            <button type="button" class="btn btn-primary btn-plus" max-quantity="@ViewBag.Book.Quantity">
+                                <i class="fa fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary px-3"><i class="fa fa-shopping-cart mr-1"></i> Thêm vào giỏ hàng</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row px-xl-5">
+        <div class="col">
+            <div class="nav nav-tabs justify-content-center border-secondary mb-4">
+                <a class="nav-item nav-link active" data-toggle="tab" href="#tab-infomation">Mô tả</a>
+                <a class="nav-item nav-link" data-toggle="tab" href="#tab-reviews">Đánh giá (@(ViewBag.BookReviews.Count))</a>
+            </div>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="tab-infomation">
+                    <h4 class="mb-3">Thông tin sản phẩm</h4>
+                    <div id="book-description" class="px-3">
+                        @Html.Raw(ViewBag.Book.Description)
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="tab-reviews">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4 class="mb-4">Đánh giá sản phẩm</h4>
+                            @{
+                                if (ViewBag.BookReviews != null && ViewBag.BookReviews.Count > 0)
+                                {
+                                    foreach (var review in ViewBag.BookReviews)
+                                    {
+                                        <div class="media mb-4">
+                                            <img src="/img/user-icon.png" class="img-fluid btn-user-circle mr-3 mt-1">
+                                            <div class="media-body">
+                                                <h6>
+                                                    @(review.UserName)
+                                                    <small> - <i>@(review.CreatedDate.ToString("dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture))</i></small>
+                                                </h6>
+                                                <div class="text-primary mb-2">
+                                                    <i class="@(review.Rating >= 1 ? "fas" : "far") fa-star"></i>
+                                                    <i class="@(review.Rating >= 2 ? "fas" : "far") fa-star"></i>
+                                                    <i class="@(review.Rating >= 3 ? "fas" : "far") fa-star"></i>
+                                                    <i class="@(review.Rating >= 4 ? "fas" : "far") fa-star"></i>
+                                                    <i class="@(review.Rating >= 5 ? "fas" : "far") fa-star"></i>
+                                                </div>
+                                                <p>@(review.Comment)</p>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div>Chưa có đánh giá cho sản phẩm</div>
+                                }
+                            }
+                        </div>
+                        <div class="col-md-6" id="your-rating">
+                            <h4 class="mb-4">Đánh giá của bạn</h4>
+                            @{
+                                var userConfig = new User();
+
+                                string userConfigStr = HttpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.UserData)?.Value;
+
+                                if (!string.IsNullOrEmpty(userConfigStr))
+                                {
+                                    userConfig = JsonConvert.DeserializeObject<User>(userConfigStr);
+                                }
+
+                                if (userConfig is null || string.IsNullOrEmpty(userConfigStr))
+                                {
+                                    <div>Vui lòng <a href="/account/login" class="primary-color">đăng nhập</a> để đánh giá sản phẩm.</div>
+                                }
+                                else
+                                {
+                                    if (ViewBag.YourReview != null)
+                                    {
+                                        <div class="media mb-4">
+                                            <img src="/img/user-icon.png" class="img-fluid btn-user-circle mr-3 mt-1">
+                                            <div class="media-body">
+                                                <h6>
+                                                    @(ViewBag.YourReview.UserName)
+                                                    <small> - <i>@(ViewBag.YourReview.CreatedDate.ToString("dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture))</i></small>
+                                                    <small>
+                                                        - <i>
+                                                            @(
+                                                            ViewBag.YourReview.Status == ApproveStatus.None ? "Chờ duyệt"
+                                                            : (ViewBag.YourReview.Status == ApproveStatus.Reject ? "Bị ẩn"
+                                                            : "Đã duyệt")
+                                                                )
+                                                        </i>
+                                                    </small>
+                                                </h6>
+                                                <div class="text-primary mb-2">
+                                                    <i class="@(ViewBag.YourReview.Rating >= 1 ? "fas" : "far") fa-star"></i>
+                                                    <i class="@(ViewBag.YourReview.Rating >= 2 ? "fas" : "far") fa-star"></i>
+                                                    <i class="@(ViewBag.YourReview.Rating >= 3 ? "fas" : "far") fa-star"></i>
+                                                    <i class="@(ViewBag.YourReview.Rating >= 4 ? "fas" : "far") fa-star"></i>
+                                                    <i class="@(ViewBag.YourReview.Rating >= 5 ? "fas" : "far") fa-star"></i>
+                                                </div>
+                                                <p>@(ViewBag.YourReview.Comment)</p>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div id="form-rating">
+                                            <div class="d-flex mt-3">
+                                                <p class="mb-0 mr-2">Đánh giá * :</p>
+                                                <div class="text-primary rating-ctn">
+                                                    <i class="far fa-star" value="1"></i>
+                                                    <i class="far fa-star" value="2"></i>
+                                                    <i class="far fa-star" value="3"></i>
+                                                    <i class="far fa-star" value="4"></i>
+                                                    <i class="far fa-star" value="5"></i>
+                                                </div>
+                                                <input type="number" class="d-none" name="rating" value="0">
+                                            </div>
+                                            <span field="rating" class="text-danger field-validation-valid"></span>
+                                            <div class="form-group mt-3">
+                                                <label for="message">Bình luận *</label>
+                                                <textarea name="comment" cols="30" rows="5" class="form-control" placeholder="Nhập đánh giá"></textarea>
+                                                <span field="comment" class="text-danger field-validation-valid"></span>
+                                            </div>
+                                            <div class="form-group mb-0">
+                                                <input type="submit" value="Gửi đánh giá" class="btn btn-primary px-3">
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Shop Detail End -->
+<!-- Products Start -->
+<div class="container-fluid py-5">
+    <div class="text-center mb-4">
+        <h2 class="section-title px-5"><span class="px-2">Sách liên quan</span></h2>
+    </div>
+    <div class="row px-xl-5">
+        <div class="col">
+            <div class="owl-carousel related-carousel">
+                @{
+                    if (ViewBag.RelatedBooks != null && ViewBag.RelatedBooks.Count > 0)
+                    {
+                        foreach (var book in ViewBag.RelatedBooks)
+                        {
+                            <div class="card product-item border-0">
+                                <div class="card-header product-img position-relative overflow-hidden bg-transparent border p-0">
+                                    <img class="img-fluid w-100 h-100 object-fit-contain" src="/uploads/@book.BookImage" alt="Ảnh bìa sách">
+                                </div>
+                                <div class="card-body border-left border-right text-center p-0 pt-4 pb-3">
+                                    <h6 class="text-truncate px-2 mb-3">@book.BookName</h6>
+                                    <div class="d-flex justify-content-center">
+                                        @if (book.PriceDiscount != null)
+                                        {
+                                            <h6>@(book.PriceDiscount.ToString("#,##0")) đ</h6>
+                                            <h6 class="text-muted ml-2"><del>@(string.Concat(((int)book.Price).ToString("#,##0"), " đ"))</del></h6>
+                                        }
+                                        else
+                                        {
+                                            <h6>@(book.Price.ToString("#,##0")) đ</h6>
+                                        }
+                                    </div>
+                                    <div class="sold-number pr-2">Đã bán @book.SoldQuantity</div>
+                                </div>
+                                <div class="card-footer d-flex justify-content-between bg-light border">
+                                    <a href="/home/detail?id=@book.Id" class="btn btn-sm text-dark p-0"><i class="fas fa-eye text-primary mr-1"></i>Xem</a>
+                                    <a href="/cart/addtocart?bookId=@book.Id" class="btn btn-sm text-dark p-0"><i class="fas fa-shopping-cart text-primary mr-1"></i>Thêm vào giỏ hàng</a>
+                                </div>
+                            </div>
+                        }
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Products End -->
+@section scripts {
+    <script src="~/lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="~/js/main.js"></script>
+    <script>
+        $('#form-rating .fa-star').click(function (e) {
+            $('#form-rating .fa-star').removeClass('fas').addClass('far');
+            let preStar = $(e.target).prevAll();
+
+            preStar.each(function (item) {
+                $(preStar[item]).removeClass('far').addClass('fas');
+            })
+            $(e.target).removeClass('far').addClass('fas');
+
+            let rating = parseInt(e.currentTarget.getAttribute('value'));
+            $('#form-rating input[name="rating"]').val(rating);
+
+            $('#form-rating span[field="rating"]').text('');
+        })
+
+        $('#form-rating input[type="submit"]').click(function (e) {
+            if (validateBeforeSave()) {
+                let rating = parseInt($('#form-rating input[name="rating"]').val()),
+                    comment = $('#form-rating [name="comment"]').val();
+
+                $.ajax({
+                    url: '/home/reviewbooks',
+                    dataType: "json",
+                    type: 'POST',
+                    contentType: 'application/json; charset=utf-8',
+                    data: JSON.stringify({
+                        bookId: @ViewBag.Book.Id,
+                        rating: rating,
+                        comment: comment
+                    }),
+                    async: true,
+                    success: function (data) {
+                        window.location.href = data.redirectToUrl;
+                    },
+                    error: function (xhr) {
+                        showErrorToast('Có lỗi xảy ra trong quá trình xử lý.');
+                    }
+                });
+            }
+        })
+
+        function validateBeforeSave() {
+            $('#form-rating .field-validation-valid').each(function (i, el) {
+                $(el).text('');
+            });
+
+            var valid = true,
+                rating = parseInt($('#form-rating input[name="rating"]').val()),
+                comment = $('#form-rating [name="comment"]').val();
+
+            if (rating == null || rating == 0) {
+                valid = false;
+                $('#form-rating span[field="rating"]').text('Vui lòng đánh giá sản phẩm');
+            }
+            if (comment.trim() === '' || !comment.trim()) {
+                valid = false;
+                $('#form-rating span[field="comment"]').text('Vui lòng nhập đánh giá sản phẩm');
+            }
+
+            return valid;
+        }
+
+        $('#form-rating [name="comment"]').on('blur', function () {
+
+            if ($(this).val().trim() != '') {
+                $('#form-rating span[field="comment"]').text('');
+            }
+            else {
+                $('#form-rating span[field="comment"]').text('Vui lòng nhập đánh giá sản phẩm');
+            }
+        })
+
+        function showErrorToast(msg) {
+            $('.toast-placement').removeClass('bg-success').addClass('bg-danger');
+            $('.toast-placement .title').text('Thất bại');
+            $('.toast-placement .toast-body').text(msg);
+            $('.toast-placement').toast('show');
+        }
+
+        function showSuccessToast(msg) {
+            $('.toast-placement').removeClass('bg-danger').addClass('bg-success');
+            $('.toast-placement .title').text('Thành công');
+            $('.toast-placement .toast-body').text(msg);
+            $('.toast-placement').toast('show');
+        }
+    </script>
+}

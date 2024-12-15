@@ -1,0 +1,281 @@
+﻿@using BookManagement.Models.Model;
+@using static BookManagement.Constant.Enumerations
+@model CartConfirmModel
+
+@{
+    ViewData["Title"] = "Giỏ hàng";
+}
+
+@section css {
+    <link href="~/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+}
+
+<!-- Cart Start -->
+<div class="container-fluid">
+    <div class="row px-xl-5">
+        <div class="d-flex align-items-center">
+            <a href="/cart?deliveryId=@Model.DeliveryId&voucherId=@Model.VoucherId">
+                <i class="menu-icon tf-icons bx bx-arrow-back" style="font-size: 1.5em;"></i>
+            </a>
+        </div>
+        <div class="col">
+            <div class="nav nav-tabs justify-content-center border-secondary mb-4">
+                <a class="nav-item nav-link active" href="#">Giỏ hàng</a>
+                <a class="nav-item nav-link" href="/cart/waiting">Chờ lấy hàng</a>
+                <a class="nav-item nav-link" href="/cart/delivering">Đang giao hàng</a>
+                <a class="nav-item nav-link" href="/cart/ordercomplete">Hoàn thành</a>
+                <a class="nav-item nav-link" href="/cart/ordercancel">Đã hủy</a>
+            </div>
+            <div class="tab-content">
+                <div class="tab-pane fade show active">
+                    @using (@Html.BeginForm("ConfirmOrder", "Cart", FormMethod.Post))
+                    {
+                        <div class="row">
+                            <h5 class="font-weight-medium primary-color mb-3">Mã đơn hàng: <b>#@Model.OrderCode</b></h5>
+                            @Html.HiddenFor(m => m.VoucherId)
+                            @Html.HiddenFor(m => m.OrderCode)
+                            @Html.HiddenFor(m => m.DeliveryId)
+                            <div class="col-lg-7 table-responsive mb-5">
+                                <div class="mb-1">
+                                    <h4 class="font-weight-semi-bold mb-3">Thông tin người nhận</h4>
+                                    <div class="row">
+                                        <div class="col-12 form-group">
+                                            <label>Họ tên người nhận</label>
+                                            @Html.TextBoxFor(m => m.CustomerName, new { @class = "form-control", required = "required", placeholder = "Họ tên", maxlength = "255" })
+                                            @Html.ValidationMessageFor(m => m.CustomerName, "", new { @class = "text-danger" })
+                                        </div>
+                                        <div class="col-md-12 form-group">
+                                            <label>Số điện thoại</label>
+                                            @Html.TextBoxFor(m => m.PhoneNumber, new { @class = "form-control", required = "required", placeholder = "Số điện thoại" })
+                                            @Html.ValidationMessageFor(m => m.PhoneNumber, "", new { @class = "text-danger" })
+                                        </div>
+                                        <div class="col-12 form-group">
+                                            <label>Địa chỉ nhận hàng</label>
+                                            @Html.TextBoxFor(m => m.CustomerAddress, new { @class = "form-control", required = "required", placeholder = "Địa chỉ", maxlength = "500" })
+                                            @Html.ValidationMessageFor(m => m.CustomerAddress, "", new { @class = "text-danger" })
+                                        </div>
+                                        <div class="col-12 form-group">
+                                            <label>Ghi chú</label>
+                                            @Html.TextAreaFor(m => m.OrderNote, new { @class = "form-control", rows = "2" })
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 class="font-weight-semi-bold mb-3" id="payment-header">Phương thức thanh toán</h4>
+
+                                    <div class="row my-2" id="payment-options">
+                                        <div class="col-md mb-md-0 mb-2">
+                                            <div class="form-check custom-option custom-option-basic checked">
+                                                <label class="form-check-label custom-option-content form-check-input-payment d-flex gap-3 align-items-center" for="paymentCOD">
+                                                    <input name="paymentType" class="form-check-input" type="radio" value="@PaymentType.Cod" id="paymentCOD" checked="">
+                                                    <span class="custom-option-body">
+                                                        <span class="ms-3">Thanh toán khi nhận hàng</span>
+                                                    </span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md mb-md-0 mb-2">
+                                            <div class="form-check custom-option custom-option-basic">
+                                                <label class="form-check-label custom-option-content form-check-input-payment d-flex gap-3 align-items-center" for="paymentOnline">
+                                                    <input name="paymentType" class="form-check-input" type="radio" value="@PaymentType.Online" id="paymentOnline">
+                                                    <span class="custom-option-body">
+                                                        <span class="ms-3">Thanh toán online</span>
+                                                    </span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div id="payment-online-info" class="d-none">
+                                    <h5 class="mt-4">Thông tin thanh toán</h5>
+                                    <p id="payment-status" class="text-warning font-weight-bold">Tình trạng thanh toán: Chưa thanh toán</p> <!-- Text ghi tình trạng thanh toán -->
+                                    <!-- Nút Thanh toán -->
+                                    <div class="text-center mt-4">
+                                        <button type="button" class="btn btn-primary py-2 px-4" id="btn-payment-online">Thanh toán ngay</button>
+                                    </div>
+                                </div>
+                                <script>
+
+
+
+                                    // Lấy các tham số từ URL
+                                    const params = new URLSearchParams(window.location.search);
+
+                                    // Trích xuất các tham số từ URL
+                                    const resultCode = params.get('resultCode'); // Mã kết quả giao dịch
+                                    const message = params.get('message'); // Tin nhắn từ MoMo
+                                    const orderId = params.get('orderId');
+                                    const transId = params.get('transId');
+                                    const amount = params.get('amount');
+                                    const orderInfo = params.get('orderInfo');
+                                    const orderType = params.get('orderType');
+                                    const payType = params.get('payType');
+
+                                    // Cập nhật tình trạng thanh toán trên giao diện
+                                    if (resultCode === null) {
+                                        document.getElementById('payment-status').innerText = "Tình trạng thanh toán: Chưa thanh toán";
+                                    } else {
+                                        document.getElementById('payment-status').innerText = `Tình trạng thanh toán: ${message}`;
+                                        const customerName = localStorage.getItem('customerName');
+                                        const phoneNumber = localStorage.getItem('phoneNumber');
+                                        const customerAddress = localStorage.getItem('customerAddress');
+                                        const orderNote = localStorage.getItem('orderNote');
+                                        const paymentType = localStorage.getItem('paymentType');
+
+                                        if (customerName) document.getElementById('CustomerName').value = customerName;
+                                        if (phoneNumber) document.getElementById('PhoneNumber').value = phoneNumber;
+                                        if (customerAddress) document.getElementById('CustomerAddress').value = customerAddress;
+                                        if (orderNote) document.getElementById('OrderNote').value = orderNote;
+                                        if (paymentType) {
+                                            document.querySelector(`input[name="paymentType"][value="${paymentType}"]`).checked = true;
+                                        }
+                                    }
+
+                                    // Nếu thanh toán thành công
+                                    if (resultCode == 0) {
+
+                                        // Thay đổi tiêu đề thành "Đã Thanh Toán Thành Công"
+                                        document.getElementById('payment-header').innerText = "Đã Thanh Toán Thành Công";
+
+                                        // Ẩn các phần còn lại (lựa chọn phương thức thanh toán, nút thanh toán)
+                                        document.getElementById('payment-options').style.display = "none";
+                                        document.getElementById('payment-online-info').style.display = "none";
+
+
+                                    }
+
+                                    // Nút thanh toán
+                                    document.getElementById("btn-payment-online").addEventListener("click", async () => {
+                                        try {
+                                            const customerName = document.getElementById('CustomerName').value;
+                                            const phoneNumber = document.getElementById('PhoneNumber').value;
+                                            const customerAddress = document.getElementById('CustomerAddress').value;
+                                            const orderNote = document.getElementById('OrderNote').value;
+                                            const paymentType = document.querySelector('input[name="paymentType"]:checked').value;
+
+                                            // Lưu dữ liệu vào localStorage
+                                            localStorage.setItem('customerName', customerName);
+                                            localStorage.setItem('phoneNumber', phoneNumber);
+                                            localStorage.setItem('customerAddress', customerAddress);
+                                            localStorage.setItem('orderNote', orderNote);
+                                            localStorage.setItem('paymentType', paymentType);
+
+                                            // Dữ liệu gửi đi
+                                            const requestData = {
+                                                redirectUrl: window.location.href, // Thay bằng URL thật
+                                                ipnUrl: "https://example.com/ipn", // Thay bằng URL thật
+                                                amount: @Model.TotalMoney           // Sử dụng số tiền từ Model.TotalMoney
+                                                                                                                                                                    };
+
+                                            // Gọi API
+                                            const response = await fetch("https://localhost:7230/api/Momo/create-transaction", {
+                                                method: "POST",
+                                                headers: {
+                                                    "accept": "*/*",
+                                                    "Content-Type": "application/json"
+                                                },
+                                                body: JSON.stringify(requestData)
+                                            });
+
+                                            // Kiểm tra response
+                                            if (!response.ok) {
+                                                throw new Error("Không thể kết nối với API.");
+                                            }
+
+                                            const responseData = await response.json();
+
+                                            // Kiểm tra kết quả và chuyển hướng
+                                            if (responseData.payUrl) {
+                                                window.location.href = responseData.payUrl; // Chuyển hướng tới trang thanh toán
+                                            } else {
+                                                alert("Không thể tạo giao dịch: " + (responseData.message || "Lỗi không xác định"));
+                                            }
+                                        } catch (error) {
+                                            console.error("Lỗi:", error);
+                                            alert("Đã xảy ra lỗi khi thanh toán. Vui lòng thử lại.");
+                                        }
+                                    });
+                                </script>
+                            </div>
+                            <div class="col-lg-5">
+                                <div class="card border-secondary mb-4">
+                                    <div class="card-header bg-secondary border-0">
+                                        <h4 class="font-weight-semi-bold m-0">Tổng cộng</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        @{
+                                            if (ViewBag.CartInfo.CartItems != null && ViewBag.CartInfo.CartItems.Count > 0)
+                                            {
+                                                @foreach (var item in ViewBag.CartInfo.CartItems)
+                                                {
+                                                    <div class="d-flex justify-content-between mb-2 pt-1">
+                                                        <div class="d-flex">
+                                                            <div class="flex-shrink-0 me-3">
+                                                                <div class="align-middle">
+                                                                    <img src="/uploads/@item.BookImage" class="img-book-td mx-1" />
+                                                                </div>
+                                                            </div>
+                                                            <div class="flex-grow-1">
+                                                                <h6 class="font-weight-medium d-block">@item.BookName</h6>
+                                                                <small class="text-muted">x(@item.Quantity)</small>
+                                                            </div>
+                                                        </div>
+                                                        <h6 class="font-weight-medium">@(item.TotalMoney.ToString("#,##0")) đ</h6>
+                                                    </div>
+                                                }
+                                            }
+                                        }
+                                        <hr class="mt-0">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <h6 class="font-weight-medium">Tổng</h6>
+                                            <h6 class="font-weight-medium">@(ViewBag.CartInfo.GrossMoney.ToString("#,##0")) đ</h6>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <h6 class="font-weight-medium">Phí vận chuyển</h6>
+                                            <h6 class="font-weight-medium">@(Model.ShipCost.ToString("#,##0")) đ</h6>
+                                            @Html.HiddenFor(m => m.ShipCost)
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <h6 class="font-weight-medium">Khuyến mại:</h6>
+                                            <h6 class="font-weight-medium text-muted"><del>@(Model.Discount.ToString("#,##0")) đ</del></h6>
+                                            @Html.HiddenFor(m => m.Discount)
+                                        </div>
+                                    </div>
+                                    <div class="card-footer border-secondary bg-transparent">
+                                        <div class="d-flex justify-content-between mt-2">
+                                            <h5 class="font-weight-bold">Tổng tiền:</h5>
+                                            <h5 class="font-weight-bold">@(Model.TotalMoney.ToString("#,##0")) đ</h5>
+                                            @Html.HiddenFor(m => m.TotalMoney)
+                                        </div>
+
+                                        <button type="submit" class="btn btn-block btn-primary mt-3 py-3">Xác nhận</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts {
+    <script>
+        $('input[type=radio][name=paymentType]').on('change', function (e) {
+            $(".custom-option").removeClass("checked");
+            e.target.closest(".custom-option").classList.add("checked");
+
+            switch ($(this).val()) {
+                case '@PaymentType.Cod':
+                    $('#payment-online-info').addClass('d-none');
+
+                    break;
+                case '@PaymentType.Online':
+                    $('#payment-online-info').removeClass('d-none');
+
+                    break;
+            }
+        });
+    </script>
+}

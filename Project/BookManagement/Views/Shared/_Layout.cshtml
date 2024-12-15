@@ -1,0 +1,241 @@
+﻿@using BookManagement.Constant;
+@using BookManagement.Models.Entity;
+@using Newtonsoft.Json;
+@using Microsoft.AspNetCore.Http;
+@using System.Security.Claims;
+@inject IHttpContextAccessor HttpContextAccessor
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Book Store</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <!-- Favicon -->
+    <link href="~/img/logo-img.jpeg" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="~/assets/vendor/fonts/boxicons.css" />
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="~/css/style.css" rel="stylesheet">
+    <link href="~/css/toast.css" rel="stylesheet" />
+
+    @if (IsSectionDefined("css"))
+    {
+        @RenderSection("css", required: false)
+    }
+</head>
+<body>
+    <header>
+        <!-- Topbar Start -->
+        <div class="container-fluid">
+            <div class="row align-items-center py-2 px-xl-5">
+                <div class="col-lg-3 d-none d-flex">
+                    <a href="/home" class="text-decoration-none justify-content-center">
+                        <div id="logoImg"></div>
+                    </a>
+                </div>
+                <div class="col-lg-6 col-6 text-left">
+                    <form action="/home/search">
+                        <div class="input-group search-ctn">
+                            <input type="text" class="form-control" name="keyword" placeholder="Tìm kiếm sách..." value="@ViewBag.Keyword">
+                            <input type="number" class="d-none" name="categoryId" value="@ViewBag.CategoryId">
+                            <input type="number" class="d-none" name="sortType" value="@ViewBag.SortType">
+                            <button type="submit" class="p-0 bg-white border-0">
+                                <div class="input-group-append h-100">
+                                    <span class="input-group-text bg-transparent text-primary">
+                                        <i class="fa fa-search"></i>
+                                    </span>
+                                </div>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-lg-3 col-6 d-flex justify-content-end">
+                    @{
+                        var userConfig = new User();
+
+                        string userConfigStr = HttpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.UserData)?.Value;
+
+                        if (!string.IsNullOrEmpty(userConfigStr))
+                        {
+                            userConfig = JsonConvert.DeserializeObject<User>(userConfigStr);
+                        }
+
+                        if (userConfig is null || string.IsNullOrEmpty(userConfigStr))
+                        {
+                            <a href="/cart" class="btn">
+                                <i class="fas fa-shopping-cart text-primary"></i>
+                                <span class="badge">0</span>
+                            </a>
+
+                            <a href="/account/login" class="btn">
+                                Đăng nhập
+                            </a>
+                        }
+                        else
+                        {
+                            <a href="/cart" class="btn cart-btn">
+                                <i class="fas fa-shopping-cart text-primary"></i>
+                                <span class="badge">@ViewBag.CartCount</span>
+                            </a>
+
+                            <ul class="navbar-nav btn-user-circle flex-row align-items-center ml-2">
+                                <!-- User -->
+                                <li class="nav-item navbar-dropdown h-100 w-100 dropdown-user dropdow">
+                                    <a class="nav-link dropdown-toggle h-100 w-100 p-0 hide-arrow" data-bs-toggle="dropdown">
+                                        <div class="avatar">
+                                            <img src="~/img/user-icon.png" class="h-100 w-100 rounded-circle" />
+                                        </div>
+                                    </a>
+                                    <ul class="dropdown-menu border dropdown-menu-end dropdown-user-custom">
+                                        <div class="m-3 icon-user">
+                                            <div>
+                                                <img src="~/img/user-icon.png" class="w-100 h-100 rounded-circle" />
+                                            </div>
+                                        </div>
+                                        <h6 class="fw-semibold px-2 d-block">
+                                            @userConfig.UserName
+                                            @if (userConfig.RoleType == RoleEnum.Admin)
+                                            {
+                                                <small class="text-muted mb-5" style="font-size: x-small;">(admin)</small>
+                                            }
+                                        </h6>
+                                        <small class="text-muted mb-5">@userConfig.Email</small>
+
+                                        <li>
+                                            <div class="dropdown-divider"></div>
+                                        </li>
+                                        <li style="text-align: left;">
+                                            <a class="dropdown-item" href="/account/infomation">
+                                                <i class="bx bx-user me-2"></i>
+                                                <span class="align-middle">Thông tin tài khoản</span>
+                                            </a>
+                                        </li>
+                                        @if (userConfig.RoleType == RoleEnum.Admin || userConfig.RoleType == RoleEnum.Staff)
+                                        {
+                                            <li style="text-align: left;">
+                                                <a class="dropdown-item" href="/admin/dashboard">
+                                                    <i class="bx bx-cog me-2"></i>
+                                                    <span class="align-middle">Trang quản lý</span>
+                                                </a>
+                                            </li>
+                                        }
+                                        <li style="text-align: left;">
+                                            <a class="dropdown-item" href="/account/logout">
+                                                <i class="bx bx-log-out me-2"></i>
+                                                <span class="align-middle">Đăng xuất</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <!--/ User -->
+                            </ul>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+        <!-- Topbar End -->
+    </header>
+    <div class="main border-top pt-3">
+        <main role="main">
+            @RenderBody()
+        </main>
+    </div>
+
+    <div id="spinner-loading" class="d-none">
+        <div class="loading">
+            <div class="fas fa-spinner fa-spin fa-2x"></div>
+            <span class="loading-text">Loading...</span>
+        </div>
+    </div>
+
+    <footer>
+        <!-- Footer Start -->
+        <div class="container-fluid bg-secondary text-dark mt-5">
+            <h5 class="pt-5 px-xl-5">Cửa hàng sách Book Store</h5>
+            <div class="row px-xl-5 align-items-center">
+                <div class="col-lg-3 col-md-12 pr-3 pr-xl-5">
+                    <a class="text-decoration-none m-4">
+                        <div id="logoImg"></div>
+                    </a>
+                </div>
+                <div class="col-lg-9 col-md-12">
+                    <h5>Thông tin liên hệ</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <p class="mb-2"><i class="fa fa-envelope text-primary mr-3"></i>cskh.bookstore@gmail.com</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p class="mb-2"><i class="fa fa-map-marker-alt text-primary mr-3"></i>275 An Dương Vương, Việt Nam</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p class="mb-0"><i class="fa fa-phone-alt text-primary mr-3"></i>033 491 6585</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row border-top border-light mx-xl-3 py-3 justify-content-center">
+                <div class="col-md-6 px-xl-0">
+                    <p class="mb-md-0 text-center text-md-left text-dark" style="text-align-last: center;">
+                        Copyright &copy; <a class="text-dark font-weight-semi-bold" href="#">2024 Book Store</a>. All Rights Reserved.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <!-- Footer End -->
+        <!-- Back to Top -->
+        <a href="#" class="btn btn-primary back-to-top"><i class="fa fa-angle-double-up"></i></a>
+
+        <div class="bs-toast toast toast-placement @(ViewBag.ToastType?.ToString() == Constants.Success ? "bg-success" : "bg-danger") top-0 end-0 mr-3 mt-3"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             data-delay="3000">
+            <div class="toast-header">
+                <i class="bx bx-bell mr-2"></i>
+                <div class="me-auto fw-semibold">@(ViewBag.ToastType?.ToString() == Constants.Success ? "Thành công" : "Thất bại")</div>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                @ViewBag.ToastMessage
+            </div>
+        </div>
+    </footer>
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/easing/easing.min.js"></script>
+    <script src="~/assets/vendor/js/bootstrap.js"></script>
+
+    <!-- Template Javascript -->
+    <script src="~/js/main.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            // Kiểm tra nếu có toast message trong TempData
+            if ('@ViewBag.ToastType' && '@ViewBag.ToastType' != 'None') {
+                // Hiển thị toast message
+                $('.toast-placement').toast('show');
+            }
+        });
+    </script>
+</body>
+@{
+    ViewBag.ToastType = Constants.None;
+    ViewBag.ToastMessage = string.Empty;
+}
+</html>

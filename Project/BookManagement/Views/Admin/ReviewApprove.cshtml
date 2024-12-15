@@ -1,0 +1,108 @@
+﻿@using BookManagement.Constant;
+@using BookManagement.Models.Model;
+@using System.Globalization;
+@using X.PagedList;
+@using X.PagedList.Mvc.Core;
+@using BookManagement.Models.Entity;
+@model PagingModel<ApproveReviewModel>
+
+@{
+    ViewData["Title"] = "Quản lý đánh giá";
+    ViewData["HeaderTitle"] = "Đánh giá đã duyệt";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Menu = 9;
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="nav-align-top mb-4">
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link" href="reviewmanagement">
+                        Chưa xử lý
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="#">
+                        Đã duyệt
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin/reviewreject">
+                        Đã ẩn
+                    </a>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" role="tabpanel">
+                    <div class="d-flex justify-content-between ">
+                        <h5 class="font-weight-bole">Tổng số: <strong>@Model.TotalRecord</strong> đánh giá</h5>
+                        <nav aria-label="Page navigation">
+                            @Html.PagedListPager((IPagedList)Model.DataPaging, page => Url.Action("reviewapprove", "admin", new { pageIndex = page }), new PagedListRenderOptions
+                       {
+                           LiElementClasses = new string[] { "page-item" },
+                           PageClasses = new string[] { "page-link" },
+                           UlElementClasses = new string[] { "pagination justify-content-center mb-1" },
+                           MaximumPageNumbersToDisplay = 5,
+                       })
+                        </nav>
+                    </div>
+                    @{
+                        if (Model.DataPaging != null && Model.DataPaging.Any())
+                        {
+                            @foreach (var item in Model.DataPaging)
+                            {
+                                <div class="card mt-4">
+                                    <div class="card-header bg-secondary border-0 d-flex align-items-center">
+                                        <div class="d-flex align-items-center mb-0">
+                                            <div class="avatar avt-order-item">
+                                                <img src="/img/user-icon.png" class="h-100 w-100 rounded-circle">
+                                            </div>
+                                            <h6 class="font-weight-semi-bold my-0 mx-1">@item.UserName</h6>
+                                            <small>(@(item.CreatedDate.ToString("dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture)))</small>
+                                        </div>
+                                    </div>
+                                    <div class="card-body p-2">
+                                        <div class="row pt-1">
+                                            <div class="col-md-5 mb-md-0 mb-2">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="flex-shrink-0 me-3">
+                                                        <div class="align-middle">
+                                                            <img src="/uploads/@item.BookImage" class="img-book-td mx-1" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="font-weight-medium d-block">@item.BookName</h6>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-7 mb-md-0 mb-2 border-start">
+                                                <div class="media mb-4">
+                                                    <div class="text-primary mb-2">
+                                                        <i class="bx @(item.Rating >= 1 ? "bxs-star" : "bx-star") fa-star"></i>
+                                                        <i class="bx @(item.Rating >= 2 ? "bxs-star" : "bx-star") fa-star"></i>
+                                                        <i class="bx @(item.Rating >= 3 ? "bxs-star" : "bx-star") fa-star"></i>
+                                                        <i class="bx @(item.Rating >= 4 ? "bxs-star" : "bx-star") fa-star"></i>
+                                                        <i class="bx @(item.Rating >= 5 ? "bxs-star" : "bx-star") fa-star"></i>
+                                                    </div>
+                                                    <p>@item.Comment</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="ctn-empty-table w-100 my-5 text-center">
+                                <img src="~/img/empty_data_icon.png" class="w-px-100" />
+                                <div>Không có dữ liệu</div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

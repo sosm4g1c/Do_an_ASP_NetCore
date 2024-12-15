@@ -1,0 +1,211 @@
+﻿@using BookManagement.Constant;
+@using BookManagement.Models.Model;
+@using System.Globalization;
+@using X.PagedList;
+@using X.PagedList.Mvc.Core;
+@using BookManagement.Models.Entity;
+@model PagingModel<OrderViewModel>
+
+@{
+    ViewData["Title"] = "Chờ lấy hàng";
+}
+
+@section css {
+    <link href="~/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+}
+
+<!-- Cart Start -->
+<div class="container-fluid">
+    <div class="row px-xl-5">
+        <div class="col">
+            <div class="nav nav-tabs justify-content-center border-secondary mb-4">
+                <a class="nav-item nav-link" href="/cart">Giỏ hàng</a>
+                <a class="nav-item nav-link active" href="#">Chờ lấy hàng</a>
+                <a class="nav-item nav-link" href="/cart/delivering">Đang giao hàng</a>
+                <a class="nav-item nav-link" href="/cart/ordercomplete">Hoàn thành</a>
+                <a class="nav-item nav-link" href="/cart/ordercancel">Đã hủy</a>
+            </div>
+            <div class="tab-content">
+                <div class="tab-pane fade show active">
+                    <div class="d-flex justify-content-between mb-2">
+                        <h5 class="font-weight-bole">Tổng số: <strong>@Model.TotalRecord</strong> đơn hàng</h5>
+                        <nav aria-label="Page navigation">
+                            @Html.PagedListPager((IPagedList)Model.DataPaging, page => Url.Action("waiting", "cart", new { pageIndex = page }), new PagedListRenderOptions
+                       {
+                           LiElementClasses = new string[] { "page-item" },
+                           PageClasses = new string[] { "page-link" },
+                           UlElementClasses = new string[] { "pagination justify-content-center mb-1" },
+                           MaximumPageNumbersToDisplay = 5,
+                       })
+                        </nav>
+                    </div>
+                    @{
+                        if (Model.DataPaging != null && Model.DataPaging.Any())
+                        {
+                            @foreach (var item in Model.DataPaging)
+                            {
+                                <div class="card border-secondary mb-5">
+                                    <div class="card-header bg-secondary border-0">
+                                        <h6 class="m-0"> Mã đơn hàng <b>#@item.OrderCode</b></h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="avatar avt-order-item">
+                                                <img src="/img/user-icon.png" class="h-100 w-100 rounded-circle">
+                                            </div>
+                                            <h6 class="font-weight-semi-bold my-0 mx-1">@item.UserName</h6>
+                                            <small>(@(item.UpdatedDate.ToString("dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture)))</small>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-5">
+                                                <h6 class="font-weight-medium mb-0">Người nhận: <label class="font-weight-normal">@item.CustomerName</label></h6>
+                                            </div>
+                                            <div class="col-7">
+                                                <h6 class="font-weight-medium mb-0">Số điện thoại: <label class="font-weight-normal">@item.PhoneNumber</label></h6>
+                                            </div>
+                                            <div class="col-12">
+                                                <h6 class="font-weight-medium mb-0">Địa chỉ: <label class="font-weight-normal">@item.CustomerAddress</label></h6>
+                                            </div>
+                                        </div>
+                                        <hr class="mt-0">
+                                        @foreach (var detail in item.OrderDetails)
+                                        {
+                                            <div class="d-flex justify-content-between mb-3 pt-1">
+                                                <div class="d-flex">
+                                                    <div class="flex-shrink-0 me-3">
+                                                        <div class="align-middle">
+                                                            <img src="/uploads/@detail.BookImage" class="img-book-td mx-1" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="font-weight-medium d-block">@detail.BookName</h6>
+                                                        <small class="text-muted">x(@detail.Quantity)</small>
+                                                    </div>
+                                                </div>
+                                                <h6 class="font-weight-medium">@(detail.PriceBuy.ToString("#,##0")) đ</h6>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="card-footer border-secondary bg-transparent">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <h6 class="font-weight-medium">Phí vận chuyển:</h6>
+                                            <h6 class="font-weight-medium">@(item.ShipCost.ToString("#,##0")) đ</h6>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <h6 class="font-weight-medium">Khuyến mại:</h6>
+                                            <h6 class="font-weight-medium text-muted"><del>@(item.Discount.ToString("#,##0")) đ</del></h6>
+                                        </div>
+                                        <div class="d-flex justify-content-between mt-2">
+                                            <h5 class="font-weight-bold">Tổng tiền:</h5>
+                                            <h5 class="font-weight-bold">@(item.TotalMoney.ToString("#,##0")) đ</h5>
+                                        </div>
+
+                                        <h6 class="font-weight-medium">Phương thức vận chuyển: <small>@item.DeliveryName</small></h6>
+                                        <h6 class="font-weight-medium">Hình thức thanh toán: <small>@item.PaymentName</small></h6>
+                                        <h6 class="font-weight-medium">Ghi chú: <small>@item.OrderNote</small></h6>
+                                    </div>
+
+                                    <button class="btn btn-block btn-primary mb-3 mr-3" onclick="cancelOrder(@item.Id)" style="width: fit-content; align-self: self-end;">
+                                        Hủy đơn hàng
+                                    </button>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="ctn-empty-table w-100 my-5 text-center">
+                                <img src="~/img/empty_data_icon.png" class="w-px-100" />
+                                <div>Không có dữ liệu</div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Cart End -->
+<!-- Modal -->
+<div class="modal fade" id="cancelReasonModal" tabindex="-1" aria-hidden="true" data-bs-keyboard="false" data-bs-backdrop="static">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Hủy đơn hàng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col mb-3">
+                        <label class="form-label">Lý do hủy <span style="color: red;">*</span></label>
+                        <select class="form-select navbar-detached" id="selectReason">
+                            <option value="0">Chọn lý do hủy</option>
+                            <option value="@Enumerations.ReasonCancel.ChangeInfo">Thay đổi thông tin giao hàng</option>
+                            <option value="@Enumerations.ReasonCancel.NotBuy">Đổi ý, không muốn mua nữa</option>
+                            <option value="@Enumerations.ReasonCancel.WrongOrder">Đặt nhầm sản phẩm</option>
+                            <option value="@Enumerations.ReasonCancel.NotVoucher">Chưa áp mã giảm giá</option>
+                            <option value="@Enumerations.ReasonCancel.Other">Lý do khác</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer d-flex align-items-center">
+                <button type="button" class="btn btn-secondary mx-2" data-bs-dismiss="modal">Đóng</button>
+                <button id="btnSave" class="btn btn-primary" onclick="confirmCancel()">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts {
+    <script>
+        $('#cancelReasonModal #selectReason').on('click', function () {
+            $('#cancelReasonModal #selectReason').removeClass("is-invalid");
+        })
+
+        function cancelOrder(orderId) {
+            $('#cancelReasonModal #selectReason').attr("order-id", orderId);
+            $('#cancelReasonModal #selectReason').removeClass("is-invalid");
+
+            $('#cancelReasonModal').modal('show');
+        }
+
+        function confirmCancel() {
+            let reason = $('#cancelReasonModal #selectReason').find(":selected").val(),
+                orderId = parseInt($('#cancelReasonModal #selectReason').attr('order-id'));
+
+            if (reason && reason != "0") {
+                $.ajax({
+                    url: `/cart/CancelOrder?orderId=${orderId}&reason=${reason}`,
+                    dataType: "json",
+                    type: 'PUT',
+                    contentType: 'application/json; charset=utf-8',
+                    async: true,
+                    success: function (data) {
+                        window.location.href = data.redirectToUrl;
+                    },
+                    error: function (xhr) {
+                        showErrorToast('Có lỗi xảy ra trong quá trình xử lý.');
+                    }
+                });
+            }
+            else {
+                $('#cancelReasonModal #selectReason').addClass("is-invalid");
+            }
+        }
+
+        function showErrorToast(msg) {
+            $('.toast-placement').removeClass('bg-success').addClass('bg-danger');
+            $('.toast-placement .title').text('Thất bại');
+            $('.toast-placement .toast-body').text(msg);
+            $('.toast-placement').toast('show');
+        }
+
+        function showSuccessToast(msg) {
+            $('.toast-placement').removeClass('bg-danger').addClass('bg-success');
+            $('.toast-placement .title').text('Thành công');
+            $('.toast-placement .toast-body').text(msg);
+            $('.toast-placement').toast('show');
+        }
+    </script>
+}

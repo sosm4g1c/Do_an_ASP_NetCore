@@ -1,0 +1,364 @@
+﻿@using BookManagement.Models.Model;
+@using X.PagedList;
+@using X.PagedList.Mvc.Core;
+@using BookManagement.Models.Entity;
+@model PagingModel<Voucher>
+
+@{
+    ViewData["Title"] = "Quản lý khuyến mại";
+    ViewData["HeaderTitle"] = "Khuyến mại";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Menu = 5;
+}
+
+@section css {
+}
+
+<div class="d-flex justify-content-end align-items-center pb-3">
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" onclick="addVoucher()"
+            data-bs-target="#voucherModal" style="height: fit-content;">
+        Thêm mới
+    </button>
+</div>
+<div class="card">
+    <div class="table-responsive text-nowrap">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Mã khuyến mại</th>
+                    <th>Tên khuyến mại</th>
+                    <th>Số lượng</th>
+                    <th>Đã sử dụng</th>
+                    <th>Giảm giá</th>
+                    <th>Đơn tối thiểu</th>
+                    <th>Trạng thái</th>
+                    <th class="action">Hành động</th>
+                </tr>
+            </thead>
+            <tbody class="table-border-bottom-0">
+                @{
+                    if (Model.DataPaging != null && Model.DataPaging.Any())
+                    {
+                        @foreach (var item in Model.DataPaging)
+                        {
+                            <tr>
+                                <td><i class="fab fa-angular fa-lg text-danger me-3"></i> <strong>@item.VoucherCode</strong></td>
+                                <td>@item.VoucherName</td>
+                                <td>@item.Quantity</td>
+                                <td>@item.UsedNumber</td>
+                                <td>@(item.Discount.ToString("#,##0")) đ</td>
+                                <td>@(item.MinAmount.ToString("#,##0")) đ</td>
+                                <td><span class="badge @(item.IsActive ? "bg-label-success" : "bg-label-danger") me-1">@(item.IsActive ? "Đang hoạt động" : "Không hoạt động")</span></td>
+                                <td class="action">
+                                    <div class="d-flex h-100">
+                                        <a class="h-100 w-px-30" onclick="editVoucher(@item.Id)" title="Sửa"><i class="bx bx-edit-alt me-1"></i></a>
+                                        <a class="h-100 w-px-30" onclick="deleteVoucher(@item.Id)" title="Xóa"><i class="bx bx-trash me-1"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr class="empty-table">
+                            <td colspan="8">
+                                <div class="ctn-empty-table w-100 my-5 text-center">
+                                    <img src="~/img/empty_data_icon.png" class="w-px-100" />
+                                    <div>Không có dữ liệu</div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="d-flex justify-content-between align-items-center px-3 py-2 border-top">
+        <h6 class="m-0">Tổng số: <strong>@Model.TotalRecord</strong> bản ghi</h6>
+        <nav aria-label="Page navigation">
+            @Html.PagedListPager((IPagedList)Model.DataPaging, page => Url.Action("vouchermanagement", "admin", new { pageIndex = page }),  new PagedListRenderOptions {
+            LiElementClasses = new string[] { "page-item" },
+            PageClasses = new string[] { "page-link" },
+            UlElementClasses = new string[] { "pagination justify-content-center mb-1" },
+            MaximumPageNumbersToDisplay = 5,
+            })
+        </nav>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="voucherModal" tabindex="-1" aria-hidden="true" data-bs-keyboard="false" data-bs-backdrop="static">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel1">Thêm khuyến mại</h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-2">
+                    <div class="col mb-3">
+                        <label field="voucherCode" class="form-label">Mã khuyến mại</label>
+                        <input type="text" maxlength="6" required="required" id="voucherCode" name="voucherCode" class="form-control" placeholder="Nhập mã" />
+                        <span field="voucherCode" class="text-danger field-validation-valid"></span>
+                    </div>
+                    <div class="col mb-3">
+                        <label field="quantity" class="form-label">Số lượng</label>
+                        <input type="number" required="required" max="1000" id="quantity" name="quantity" class="form-control" placeholder="Số lượng" />
+                        <span field="quantity" class="text-danger field-validation-valid"></span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col mb-0">
+                        <label field="voucherName" class="form-label">Tên khuyến mại</label>
+                        <input type="text" maxlength="500" required="required" id="voucherName" name="voucherName" class="form-control" placeholder="Nhập tên" />
+                        <span field="voucherName" class="text-danger field-validation-valid"></span>
+                    </div>
+                </div>
+                <div class="row g-2">
+                    <div class="col mb-3">
+                        <label field="discount" class="form-label">Giảm giá</label>
+                        <div class="input-group">
+                            <input type="number" required="required" id="discount" name="discount" class="form-control" placeholder="Giảm giá" />
+                            <span class="input-group-text">đ</span>
+                        </div>
+                        <span field="discount" class="text-danger field-validation-valid"></span>
+                    </div>
+                    <div class="col mb-3">
+                        <label field="minAmount" class="form-label">Đơn tối thiểu</label>
+                        <div class="input-group">
+                            <input type="number" required="required" id="minAmount" name="minAmount" class="form-control" placeholder="Đơn tối thiểu" value="0" />
+                            <span class="input-group-text">đ</span>
+                        </div>
+                        <span field="minAmount" class="text-danger field-validation-valid"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-between align-items-center">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="isActive" name="isActive" checked />
+                    <label class="form-check-label">Trạng thái</label>
+                </div>
+                <div class="d-flex">
+                    <button type="button" class="btn btn-outline-secondary mx-2" data-bs-dismiss="modal">
+                        Đóng
+                    </button>
+                    <button id="btnSave" class="btn btn-primary">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        let entity = {}, editMode = "Add";
+
+        function addVoucher() {
+            editMode = "Add";
+            clearValueInput();
+            $('.modal [name="voucherCode"]').prop('disabled', false);
+        }
+
+        function editVoucher(id) {
+            editMode = "Edit";
+            clearValueInput();
+
+            // Disable mã voucher
+            $('.modal [name="voucherCode"]').prop('disabled', true);
+
+            $.ajax({
+                url: '/admin/voucherbyid?id=' + id,
+                dataType: "json",
+                type: "GET",
+                contentType: 'application/json; charset=utf-8',
+                async: true,
+                success: function (data) {
+                    entity = data;
+
+                    $('.modal [name]').each(function (i, el) {
+                        let prop = $(el).attr('name');
+
+                        if ($(el).attr('type') == 'checkbox') {
+                            $(el).prop('checked', entity[prop]);
+                        }
+                        else {
+                            $(el).val(entity[prop]);
+                        }
+                    });
+
+                    $('.modal').modal('show');
+                },
+                error: function (xhr) {
+                    showErrorToast('Có lỗi xảy ra trong quá trình xử lý.');
+                }
+            });
+        }
+
+        $('.modal input[required="required"]').on('blur', function () {
+            let prop = $(this).attr('name');
+
+            if ($(this).val() != '') {
+                $(`span[field="${prop}"]`).text('');
+            }
+            else {
+                let label = $(`label[field="${prop}"]`).text();
+                $(`span[field="${prop}"]`).text(label + ' không được để trống');
+            }
+        })
+
+        $('#voucherModal #btnSave').on('click', function () {
+            $('.modal [name]').each(function (i, el) {
+                let prop = $(el).attr('name');
+
+                if ($(el).attr('type') == 'checkbox') {
+                    entity[prop] = $(el).is(":checked");
+                }
+                else {
+                    entity[prop] = $(el).val();
+                }
+            });
+
+            validateBeforeSave();
+        })
+
+        function validateBeforeSave() {
+            var valid = true;
+
+            $('#voucherModal input[required="required"]').each(function (i, el) {
+                let prop = $(this).attr('name');
+
+                if ($(el).val() != '') {
+                    $(`span[field="${prop}"]`).text('');
+                }
+                else {
+                    valid = false;
+                    let label = $(`label[field="${prop}"]`).text();
+                    $(`span[field="${prop}"]`).text(label + ' không được để trống');
+                }
+            });
+
+            if (valid) {
+                if (!entity.quantity || entity.quantity <= 0) {
+                    valid = false;
+                    $('#voucherModal #quantity').next().text('Số lượng không hợp lệ');
+                }
+                else if (entity.quantity > 10000) {
+                    valid = false;
+                    $('#voucherModal #quantity').next().text('Số lượng phải nhỏ hơn 10.000');
+                }
+                else if (!entity.discount || entity.discount <= 0) {
+                    valid = false;
+                    $(`span[field="discount"]`).text('Giảm giá không hợp lệ');
+                }
+            }
+
+            if (valid) {
+                // CHeck tồn tại Mã khuyến mại chưa
+                let cateCode = $('#voucherModal #voucherCode').val();
+
+                $.ajax({
+                    url: '/admin/existvouchercode?code=' + cateCode + (editMode == 'Edit' ? ('&id=' + entity.id) : ''),
+                    dataType: "json",
+                    type: "GET",
+                    contentType: 'application/json; charset=utf-8',
+                    async: true,
+                    success: function (data) {
+                        if (!data) {
+                            executeSave();
+                        }
+                        else {
+                            $('#voucherModal #voucherCode').next().text('Mã khuyến mại đã tồn tại');
+                        }
+                    },
+                    error: function (xhr) {
+                        showErrorToast('Có lỗi xảy ra trong quá trình xử lý.');
+                    }
+                });
+            }
+
+            return valid;
+        }
+
+        function executeSave() {
+            $('.modal [name]').each(function (i, el) {
+                let prop = $(el).attr('name');
+
+                if ($(el).attr('type') == 'checkbox') {
+                    entity[prop] = $(el).is(":checked");
+                }
+                else {
+                    entity[prop] = $(el).val();
+                }
+            });
+
+            $.ajax({
+                url: '/admin/' + (editMode == 'Edit' ? 'UpdateVoucher' : 'InsertVoucher'),
+                dataType: "json",
+                type: (editMode == 'Edit' ? 'PUT' : 'POST'),
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify(entity),
+                async: true,
+                success: function (data) {
+                    window.location.href = data.redirectToUrl;
+                },
+                error: function (xhr) {
+                    showErrorToast('Có lỗi xảy ra trong quá trình xử lý.');
+                }
+            });
+        }
+
+        function deleteVoucher(id) {
+            if (confirm("Bạn có chắc muốn xóa khuyến mại này không?")) {
+                $.ajax({
+                    url: '/admin/deletevoucher?id=' + id,
+                    dataType: "json",
+                    type: 'DELETE',
+                    contentType: 'application/json; charset=utf-8',
+                    async: true,
+                    success: function (data) {
+                        window.location.href = data.redirectToUrl;
+                    },
+                    error: function (xhr) {
+                        showErrorToast('Có lỗi xảy ra trong quá trình xử lý.');
+                    }
+                });
+            }
+        }
+
+        function clearValueInput() {
+            entity = {};
+            $('.modal [name]').each(function (i, el) {
+                let prop = $(el).attr('name');
+
+                if ($(el).attr('type') == 'checkbox') {
+                    $(el).prop('checked', true);
+                }
+                else {
+                    $(el).val('');
+                }
+            });
+            $('.modal .field-validation-valid').each(function (i, el) {
+                $(el).text('');
+            });
+
+            $('.modal #modalLabel').text(editMode == "Edit" ? 'Sửa khuyến mại' : 'Thêm khuyến mại');
+        }
+
+        function showErrorToast(msg) {
+            $('.toast-placement').removeClass('bg-success').addClass('bg-danger');
+            $('.toast-placement .title').text('Thất bại');
+            $('.toast-placement .toast-body').text(msg);
+            $('.toast-placement').toast('show');
+        }
+
+        function showSuccessToast(msg) {
+            $('.toast-placement').removeClass('bg-danger').addClass('bg-success');
+            $('.toast-placement .title').text('Thành công');
+            $('.toast-placement .toast-body').text(msg);
+            $('.toast-placement').toast('show');
+        }
+    </script>
+}

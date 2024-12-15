@@ -1,0 +1,155 @@
+﻿@using BookManagement.Models.Model;
+@using System.Globalization;
+@using X.PagedList;
+@using X.PagedList.Mvc.Core;
+@using BookManagement.Models.Entity;
+@using Newtonsoft.Json;
+@using Microsoft.AspNetCore.Http;
+@using System.Security.Claims;
+@inject IHttpContextAccessor HttpContextAccessor
+@model UserPagingModel
+
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+    ViewData["HeaderTitle"] = "Người dùng";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Menu = 6;
+}
+
+@section css {
+}
+
+<div class="book-management d-flex justify-content-between align-items-center pb-3">
+    <div class="d-flex">
+        @using (@Html.BeginForm("UserManagement", "Admin", new { keyword = Model.Keyword }, FormMethod.Get, false, new { @class = "ctn-search d-flex" }))
+        {
+            <div class="navbar-nav navbar-nav-custom align-items-center navbar-detached px-2">
+                <div class="nav-item d-flex align-items-center">
+                    <i class="bx bx-search fs-4 lh-0"></i>
+                    @Html.TextBoxFor(m => m.Keyword, new { @class = "form-control border-0 shadow-none", @placeholder = "Tìm kiếm..." })
+                </div>
+            </div>
+            <input type="submit" class="btn btn-primary mx-2" value="Lọc" style="height: fit-content;" />
+        }
+    </div>
+    <button type="button" class="btn btn-primary" style="height: fit-content;" onclick="location.href='/admin/userdetail'">
+        Thêm mới
+    </button>
+</div>
+@{
+    var userConfig = new User();
+    string userConfigStr = HttpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.UserData)?.Value;
+
+    if (!string.IsNullOrEmpty(userConfigStr))
+    {
+        userConfig = JsonConvert.DeserializeObject<User>(userConfigStr);
+    }
+
+    <div class="card">
+        <div class="table-responsive text-nowrap">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Tên đăng nhập</th>
+                        <th>Họ</th>
+                        <th>Tên</th>
+                        <th>Email</th>
+                        <th>Đơn hàng</th>
+                        <th>Tổng tiền</th>
+                        <th>Phân quyền</th>
+                        <th>Ngày đăng ký</th>
+                        <th class="action">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody class="table-border-bottom-0">
+                    @{
+                        if (Model.Paging.DataPaging != null && Model.Paging.DataPaging.Any())
+                        {
+                            @foreach (var item in Model.Paging.DataPaging)
+                            {
+                                <tr>
+                                    <td><strong>@item.UserName</strong></td>
+                                    <td>@item.FirstName</td>
+                                    <td>@item.LastName</td>
+                                    <td>@item.Email</td>
+                                    <td>@item.TotalOrder</td>
+                                    <td>@(item.TotalMoney.ToString("#,##0")) đ</td>
+                                    <td>@item.RoleName</td>
+                                    <td>@(item.CreatedDate.ToString("dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture))</td>
+                                    <td class="action">
+                                        <div class="d-flex h-100">
+                                            <a class="h-100 w-px-30 @(item.Id == userConfig.Id ? "disabled" : "")" href="/admin/lockUser?userId=@item.Id" title="@(item.IsActive ? "Khóa tài khoản" : "Mở khóa tài khoản")">
+                                                <i class="bx @(item.IsActive ? "bx-lock" : "bx-key") me-1"></i>
+                                            </a>
+                                            <a class="h-100 w-px-30" href="/admin/userdetail?id=@item.Id" title="Sửa"><i class="bx bx-edit-alt me-1"></i></a>
+                                            <a class="h-100 w-px-30 @(item.Id == userConfig.Id ? "disabled" : "")" onclick="deleteAccount(@item.Id)" title="Xóa"><i class="bx bx-trash me-1"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr class="empty-table">
+                                <td colspan="9">
+                                    <div class="ctn-empty-table w-100 my-5 text-center">
+                                        <img src="~/img/empty_data_icon.png" class="w-px-100" />
+                                        <div>Không có dữ liệu</div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="d-flex justify-content-between align-items-center px-3 py-2 border-top">
+            <h6 class="m-0">Tổng số: <strong>@Model.Paging.TotalRecord</strong> bản ghi</h6>
+            <nav aria-label="Page navigation">
+                @Html.PagedListPager((IPagedList)Model.Paging.DataPaging, page => Url.Action("usermanagement", "admin", new { pageIndex = page, keyword = Model.Keyword }), new PagedListRenderOptions
+           {
+               LiElementClasses = new string[] { "page-item" },
+               PageClasses = new string[] { "page-link" },
+               UlElementClasses = new string[] { "pagination justify-content-center mb-1" },
+               MaximumPageNumbersToDisplay = 5,
+           })
+            </nav>
+        </div>
+    </div>
+}
+
+@section scripts {
+    <script>
+        function deleteAccount(id) {
+            if (confirm("Bạn có chắc muốn xóa tài khoản này không?")) {
+                $.ajax({
+                    url: '/admin/deleteuser?userId=' + id,
+                    dataType: "json",
+                    type: 'DELETE',
+                    contentType: 'application/json; charset=utf-8',
+                    async: true,
+                    success: function (data) {
+                        window.location.href = data.redirectToUrl;
+                    },
+                    error: function (xhr) {
+                        showErrorToast('Có lỗi xảy ra trong quá trình xử lý.');
+                    }
+                });
+            }
+        }
+
+        function showErrorToast(msg) {
+            $('.toast-placement').removeClass('bg-success').addClass('bg-danger');
+            $('.toast-placement .title').text('Thất bại');
+            $('.toast-placement .toast-body').text(msg);
+            $('.toast-placement').toast('show');
+        }
+
+        function showSuccessToast(msg) {
+            $('.toast-placement').removeClass('bg-danger').addClass('bg-success');
+            $('.toast-placement .title').text('Thành công');
+            $('.toast-placement .toast-body').text(msg);
+            $('.toast-placement').toast('show');
+        }
+    </script>
+}

@@ -1,0 +1,120 @@
+﻿@using BookManagement.Constant;
+@using BookManagement.Models.Model
+@model ConfirmOtpBindingModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Quên mật khẩu - Book Store</title>
+
+    <link href="~/img/logo-img.jpeg" rel="icon">
+    <!-- Custom fonts for this template-->
+    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+          rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="~/css/sb-admin-2.css" rel="stylesheet">
+    <!-- Icons. Uncomment required icon fonts -->
+    <link rel="stylesheet" href="~/assets/vendor/fonts/boxicons.css" />
+    <link href="~/css/toast.css" rel="stylesheet" />
+</head>
+
+<body class="bg-gradient-primary">
+
+    <div class="container">
+
+        <!-- Outer Row -->
+        <div class="row justify-content-center">
+            <div class="col-xl-10 col-lg-12 col-md-9">
+                <div class="card o-hidden border-0 shadow-lg my-5">
+                    <div class="card-body p-0">
+                        <!-- Nested Row within Card Body -->
+                        <div class="row">
+                            <div class="col-lg-6 d-none d-lg-block" style="align-self: center; text-align: -webkit-center;">
+                                <div class="bg-logo-image"></div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="p-5">
+                                    <div class="text-center">
+                                        <h1 class="h4 text-gray-900 mb-2">Bạn quên mật khẩu?</h1>
+                                        <p class="mb-4">
+                                            Vui lòng nhập nhập mã OTP đã được gửi tới email của bạn!
+                                        </p>
+                                    </div>
+                                    @using (Html.BeginForm(FormMethod.Post, new { @class = "user", role = "form" }))
+                                    {
+                                        @Html.HiddenFor(m => m.Key)
+                                        <div class="form-group">
+                                            <input type="number" class="form-control form-control-user input-otp" placeholder="******"
+                                                   name="OTP" onKeyPress="if(this.value.length==6) return false;">
+                                            @Html.ValidationMessageFor(m => m.OTP, "", new { @class = "text-danger" })
+                                            <div class="mt-2 resend-opt">Bạn chưa nhận được mã?  <a href="/account/resendOTP?key=@Model.Key" class="primary-color">Gửi lại OPT</a></div>
+                                        </div>
+                                        <input type="submit" class="btn btn-primary btn-user btn-block" value="Xác nhận">
+                                    }
+                                    <hr>
+                                    <div class="text-center">
+                                        <a class="small" href="/account/register">Tạo tài khoản!</a>
+                                    </div>
+                                    <div class="text-center">
+                                        <a class="small" href="/account/login">Bạn đã có tài khoản? Đăng nhập!</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="bs-toast toast toast-placement @(ViewBag.ToastType?.ToString() == Constants.Success ? "bg-success" : "bg-danger") top-0 end-0 mr-3 mt-3"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             data-delay="3000">
+            <div class="toast-header">
+                <i class="bx bx-bell mr-2"></i>
+                <div class="me-auto fw-semibold">@(ViewBag.ToastType?.ToString() == Constants.Success ? "Thành công" : "Thất bại")</div>
+            </div>
+            <div class="toast-body">
+                @ViewBag.ToastMessage
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="~/vendor/jquery/jquery.min.js"></script>
+    <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="~/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="~/js/sb-admin-2.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            // Kiểm tra nếu có toast message trong TempData
+            if ('@ViewBag.ToastType' && '@ViewBag.ToastType' != 'None') {
+                // Hiển thị toast message
+                $('.toast-placement').toast('show');
+            }
+        });
+    </script>
+    @{
+        ViewBag.ToastType = Constants.None;
+        ViewBag.ToastMessage = string.Empty;
+    }
+</body>
+</html>

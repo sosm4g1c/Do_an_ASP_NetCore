@@ -1,0 +1,297 @@
+﻿@using BookManagement.Constant;
+@using BookManagement.Models.Entity;
+@model Book
+
+@{
+    ViewData["Title"] = "Quản lý sách";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewBag.Menu = 3;
+}
+
+@section css {
+
+}
+
+<div class="d-flex align-items-center">
+    <a href="/admin/bookmanagement">
+        <i class="menu-icon tf-icons bx bx-arrow-back" style="font-size: 1.5em;"></i>
+    </a>
+
+    <h5 class="m-0">Thông tin cuốn sách</h5>
+</div>
+
+<div class="card mt-3">
+    <div class="card-body">
+        @using (@Html.BeginForm("BookDetail", "Admin", FormMethod.Post))
+        {
+            @Html.HiddenFor(m => m.Id)
+            <div class="book-detail row">
+                <div class="col-xl-3 col-md-12">
+                    <div class="mb-3 me-2">
+                        <label class="form-label" for="basic-default-fullname">Ảnh bìa sách</label>
+                        <div class="img-book-upload w-100 border">
+                            <img id="imgBook" src="/uploads/@(Model.BookImage ?? "img-empty.png")" class="h-100 w-100" alt="Chọn ảnh bìa" />
+                            <input type="file" id="inpImgBook" accept=".png,.jpg" onchange="uploadBookImg(this)" hidden />
+                        </div>
+                        @Html.ValidationMessageFor(m=>m.BookImage, "", new { @class = "text-danger" })
+                        @Html.HiddenFor(m => m.BookImage)
+                    </div>
+                </div>
+                <div class="row col-xl-9 col-md-12">
+                    <div class="col-xl-4 col-md-12">
+                        <div class="mb-3">
+                            <label class="form-label" for="basic-default-fullname">Mã sách</label>
+                            @Html.TextBoxFor(m => m.BookCode, new { @class="form-control", placeholder="Mã sách", maxlength="12" })
+                            @Html.ValidationMessageFor(m=>m.BookCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="col-xl-8 col-md-12">
+                        <div class="mb-3">
+                            <label class="form-label" for="basic-default-fullname">Danh mục</label>
+                            @Html.DropDownList("CategoryId", (IEnumerable<SelectListItem>) ViewBag.CategoryList, new { @class = "form-select" })
+                            @Html.HiddenFor(m => m.CategoryName)
+                            @Html.ValidationMessageFor(m=>m.CategoryId, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label" for="basic-default-fullname">Tên sách (Tiêu đề)</label>
+                        @Html.TextBoxFor(m => m.BookName, new { @class="form-control", maxlength="500", placeholder="Tiêu đề" })
+                        @Html.ValidationMessageFor(m=>m.BookName, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="col-xl-4 col-md-12">
+                        <div class="mb-3">
+                            <label class="form-label" for="basic-default-fullname">Số lượng</label>
+                            @Html.TextBoxFor(m => m.Quantity, new { @class="form-control", type="number", min="0", max="1000", placeholder="Số lượng" })
+                            @Html.ValidationMessageFor(m=>m.Quantity, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-md-12">
+                        <div class="mb-3">
+                            <label class="form-label" for="basic-default-fullname">Giá sách</label>
+                            <div class="input-group">
+                                @Html.TextBoxFor(m => m.Price, new { @class="form-control", type="number", min="0", max="1000000000", placeholder="Giá sách" })
+                                <span class="input-group-text">đ</span>
+                            </div>
+                            @Html.ValidationMessageFor(m=>m.Price, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-md-12">
+                        <div class="mb-3">
+                            <label class="form-label" for="basic-default-fullname">Giá khuyến mại</label>
+                            <div class="input-group">
+                                @Html.TextBoxFor(m => m.PriceDiscount, new { @class="form-control", type="number", min="0", max="1000000000", placeholder="Giá khuyến mại" })
+                                <span class="input-group-text">đ</span>
+                            </div>
+                            @Html.ValidationMessageFor(m=>m.PriceDiscount, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-md-12">
+                        <div class="mb-3">
+                            <label class="form-label" for="basic-default-fullname">Tác giả</label>
+                            @Html.TextBoxFor(m => m.Author, new { @class="form-control", maxlength="255", placeholder="Tác giả" })
+                            @Html.ValidationMessageFor(m=>m.Author, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-md-12">
+                        <div class="mb-3">
+                            <label class="form-label" for="basic-default-fullname">Nhà xuất bản</label>
+                            @Html.TextBoxFor(m => m.Publisher, new { @class="form-control", maxlength="255", placeholder="Nhà xuất bản" })
+                            @Html.ValidationMessageFor(m=>m.Publisher, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-md-12">
+                        <div class="mb-3">
+                            <label class="form-label" for="basic-default-fullname">Năm xuất bản</label>
+                            @Html.TextBoxFor(m => m.PublishTime, new { @class="form-control", type="month" })
+                            @Html.ValidationMessageFor(m=>m.PublishTime, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-md-12">
+                        <div class="mb-3">
+                            <label class="form-label" for="basic-default-fullname">Khối lượng</label>
+                            <div class="input-group">
+                                @Html.TextBoxFor(m => m.BookWeight, new { @class="form-control", type="number", min="0", max="10000", placeholder="Khối lượng" })
+                                <span class="input-group-text">gram</span>
+                            </div>
+                            @Html.ValidationMessageFor(m=>m.BookWeight, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-md-12">
+                        <div class="mb-3">
+                            <label class="form-label" for="basic-default-fullname">Số trang</label>
+                            @Html.TextBoxFor(m => m.BookPage, new { @class="form-control", type="number", min="0", max="10000", placeholder="Số trang" })
+                            @Html.ValidationMessageFor(m=>m.BookPage, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-md-12">
+                        <div class="mb-3">
+                            <label class="form-label" for="basic-default-fullname">Kích thước (cm)</label>
+                            @Html.TextBoxFor(m => m.BookSize, new { @class="form-control", maxlength="255", placeholder="VD: 14.5 x 20.5 x 2.7" })
+                            @Html.ValidationMessageFor(m=>m.BookSize, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="basic-default-message">Thông tin mô tả</label>
+
+                @Html.TextAreaFor(model => model.Description, new { @id = "FullDescription", @class = "form-control" })
+                <script src="@Url.Content("~/js/ckeditor/ckeditor.js")"></script>
+                <script>
+                    CKEDITOR.replace("FullDescription");
+                    CKEDITOR.disableAutoInline = true;
+                </script>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Thêm hình ảnh sản phẩm</label>
+                <input class="form-control" accept=".png,.jpg" type="file" id="imgBookInfo" onchange="uploadBookImg(this)" />
+                @Html.ValidationMessageFor(m=>m.InfoImage, "", new { @class = "text-danger" })
+                @Html.HiddenFor(m => m.InfoImage)
+            </div>
+
+            <div id="ctnBookImageInfo" class="row">
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="form-check form-switch">
+                    @Html.CheckBoxFor(m => m.IsActive, new { @class="form-check-input" })
+                    <label class="form-check-label">Trạng thái</label>
+                </div>
+                <div class="d-flex">
+                    <button type="button" class="btn btn-outline-secondary mx-2" onclick="location.href='/admin/bookmanagement';">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Lưu</button>
+                </div>
+            </div>
+            @Html.EditorFor(model => model.CreatedDate, new { @type = "date", @class="d-none hide-cls" })
+        }
+    </div>
+</div>
+
+
+@section scripts {
+    <script type="text/javascript">
+        let bookInfoImg = [];
+
+        if ('@Model.InfoImage') {
+            bookInfoImg = ('@Model.InfoImage').split(";");
+
+            bindingImageInfo();
+        }
+
+        $('.img-book-upload').click(function () {
+            $('#inpImgBook')[0].click();
+        });
+
+        $('form [name]').focus(function () {
+            let attrName = $(this).attr('name');
+            $(`span[data-valmsg-for="${attrName}"]`).text('');
+        });
+
+        $("#CategoryId").change(function (e) {
+            var value = $(this).val();
+            var selected = (value == 0 ? '' : $(this).find("option:selected").text());
+            $('#CategoryName').val(selected);
+        });
+
+        function uploadBookImg(input) {
+            if (input.id == 'inpImgBook') {
+                $(`span[data-valmsg-for="BookImage"]`).text('');
+            }
+            else {
+                $(`span[data-valmsg-for="InfoImage"]`).text('');
+            }
+
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    var data = {
+                        BookID: '@Model.Id',
+                        BookImageUri: e.target.result.split(",")[1]
+                    };
+
+                    //call api
+                    $.ajax({
+                        method: "POST",
+                        url: "/admin/UploadImage",
+                        data: JSON.stringify(data),
+                        dataType: "json",
+                        contentType: 'application/json; charset=utf-8',
+                        async: true,
+                    }).done(function (res) {
+                        if (res.success) {
+                            if (input.id == 'inpImgBook') {
+                                $('#imgBook').attr('src', ('/uploads/' + res.fileName));
+                                $('input#BookImage').val(res.fileName);
+                            }
+                            else {
+                                bookInfoImg.push(res.fileName);
+                                bindingImageInfo();
+                            }
+                        } else {
+                            showErrorToast('Có lỗi xảy ra trong quá trình xử lý.');
+                        }
+                    }).fail(function (res) {
+                        showErrorToast('Có lỗi xảy ra trong quá trình xử lý.');
+                    })
+                }
+
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function bindingImageInfo() {
+            $('#ctnBookImageInfo').empty();
+
+            if (bookInfoImg.length > 0) {
+                bookInfoImg.forEach(function (item) {
+                    $("#ctnBookImageInfo").append(`<div class="col-xl-6 col-md-12 border-end">
+                                                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                                                            <div class="d-flex align-items-center">
+                                                                <img src="/uploads/${item}" class="img-book-td border mx-1">
+                                                                <p class="m-0 ms-2">${item}</p>
+                                                            </div>
+                                                            <a class="h-100 w-px-30 delete-img" imgname="${item}" title="Xóa"><i class="bx bx-trash me-1"></i></a>
+                                                        </div>
+                                                    </div>`
+                    );
+                });
+
+                $('#ctnBookImageInfo').delegate('a.delete-img', 'click', function (event) {
+                    event.stopPropagation();
+                    event.stopImmediatePropagation();
+
+                    let imgName = $(event.target).parent().attr('imgname');
+                    deleteBookImg(imgName);
+                });
+            }
+
+            $('input#InfoImage').val(bookInfoImg.join(';'));
+        }
+
+        function deleteBookImg(img) {
+            const index = bookInfoImg.indexOf(img);
+            if (index > -1) {
+                bookInfoImg.splice(index, 1);
+
+                bindingImageInfo();
+            }
+        }
+
+        function showErrorToast(msg) {
+            $('.toast-placement').removeClass('bg-success').addClass('bg-danger');
+            $('.toast-placement .title').text('Thất bại');
+            $('.toast-placement .toast-body').text(msg);
+            $('.toast-placement').toast('show');
+        }
+
+        function showSuccessToast(msg) {
+            $('.toast-placement').removeClass('bg-danger').addClass('bg-success');
+            $('.toast-placement .title').text('Thành công');
+            $('.toast-placement .toast-body').text(msg);
+            $('.toast-placement').toast('show');
+        }
+    </script>
+}
