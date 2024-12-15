@@ -10,7 +10,7 @@
 
 ## Backend: Asp .Net
 
-[![My Skills](https://skillicons.dev/icons?i=spring&perline=3)](https://skillicons.dev)
+[![My Skills](https://skillicons.dev/icons?i=dotnet&perline=3)](https://skillicons.dev)
 
 ## Database: MySQL 
 
