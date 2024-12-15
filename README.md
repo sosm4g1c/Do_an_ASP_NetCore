@@ -1,5 +1,5 @@
 # ASP .NET Core - Công Nghệ .Net 
-# Đồ án nhóm 14:
+# Đồ án nhóm 14: Xây dựng website cửa hàng sách
 
 #### Requirements: Xây dựng hệ thống bán sách trực tuyến đơn giản, tiện lợi, giúp khách hàng dễ dàng lựa chọn và mua sách, hệ thống cung cấp thông tin đầy đủ về các cuốn sách, giá cả, số lượng còn lại, và khách hàng có thể lựa chọn. Hệ thống cũng cho phép khách hàng dễ dàng tra cứu và quản lý các đơn hàng của mình.
 
